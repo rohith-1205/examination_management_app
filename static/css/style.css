@@ -154,6 +154,34 @@ a.admin-tab:hover {
     color: #a3a8b8;
 }
 
+.status-tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.35rem;
+    border-radius: 0.9rem;
+    background: #eceef8;
+    width: fit-content;
+}
+
+.status-tab {
+    padding: 0.55rem 1rem;
+    border-radius: 0.65rem;
+    color: var(--color-muted);
+    font-size: 0.86rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.status-tab:hover {
+    color: var(--color-indigo);
+}
+
+.status-tab.active {
+    color: var(--color-indigo);
+    background: #fff;
+    box-shadow: 0 3px 10px rgba(37, 39, 82, 0.08);
+}
+
 .admin-stat {
     display: flex;
     min-height: 124px;
@@ -272,6 +300,105 @@ a.admin-tab:hover {
 .booking-status-completed {
     color: #047857;
     background: #d1fae5;
+}
+
+.slot-seat-cell {
+    min-width: 115px;
+}
+
+.slot-progress {
+    height: 0.45rem;
+    border-radius: 999px;
+    background: #eeeff6;
+}
+
+.slot-progress .progress-bar {
+    border-radius: 999px;
+}
+
+.slot-status-available {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.slot-status-full {
+    color: #6d28d9;
+    background: #ede9fe;
+}
+
+.slot-status-cancelled {
+    color: #b91c1c;
+    background: #fee2e2;
+}
+
+.slot-status-completed {
+    color: #0369a1;
+    background: #e0f2fe;
+}
+
+.current-slot {
+    padding: 1rem;
+    border: 1px solid #e8eaf3;
+    border-radius: 0.9rem;
+    background: #f8f8ff;
+}
+
+.search-result-card {
+    border-top: 3px solid transparent;
+}
+
+.search-students {
+    border-top-color: #4f46e5;
+}
+
+.search-examiners {
+    border-top-color: #0f9f9a;
+}
+
+.search-exams {
+    border-top-color: #7c3aed;
+}
+
+.search-bookings {
+    border-top-color: #f97316;
+}
+
+.search-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f1f6;
+    color: var(--color-ink);
+    text-decoration: none;
+}
+
+.search-result-row:last-child {
+    border-bottom: 0;
+}
+
+.search-result-row span {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.search-result-row strong {
+    font-size: 0.9rem;
+}
+
+.search-result-row small {
+    color: var(--color-muted);
+    font-size: 0.78rem;
+}
+
+.search-result-row > i {
+    color: var(--color-indigo);
+}
+
+a.search-result-row:hover strong {
+    color: var(--color-indigo);
 }
 
 .quick-action {

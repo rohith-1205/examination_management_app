@@ -1,0 +1,49 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Add Examiner | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <span class="eyebrow">Account management</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Add examiner</h1>
+    <p class="text-secondary mb-0">Examiners added by an admin are active immediately.</p>
+</div>
+
+{% set values = form_values if form_values is defined else none %}
+<section class="admin-panel course-form-panel">
+    <form method="post">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="name" class="form-label fw-medium">Full name</label>
+                <input class="form-control" id="name" name="name" value="{{ values.get('name', '') if values else '' }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="email" class="form-label fw-medium">Email</label>
+                <input class="form-control" type="email" id="email" name="email"
+                       value="{{ values.get('email', '') if values else '' }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="department" class="form-label fw-medium">Department</label>
+                <input class="form-control" id="department" name="department"
+                       value="{{ values.get('department', '') if values else '' }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="phone" class="form-label fw-medium">Phone <span class="text-secondary">(optional)</span></label>
+                <input class="form-control" id="phone" name="phone"
+                       value="{{ values.get('phone', '') if values else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label for="password" class="form-label fw-medium">Temporary password</label>
+                <input class="form-control" type="password" id="password" name="password" minlength="6" required>
+                <div class="form-text">Use at least 6 characters.</div>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-person-check me-2"></i>Add active examiner
+            </button>
+            <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('admin.examiners') }}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

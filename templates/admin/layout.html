@@ -16,10 +16,26 @@
                href="{{ url_for('admin.exams') }}">
                 <i class="bi bi-file-earmark-text me-1"></i>Exams
             </a>
-            <span class="admin-tab admin-tab-disabled"><i class="bi bi-person-workspace me-1"></i>Examiners</span>
-            <span class="admin-tab admin-tab-disabled"><i class="bi bi-mortarboard me-1"></i>Students</span>
-            <span class="admin-tab admin-tab-disabled"><i class="bi bi-calendar3 me-1"></i>Slots</span>
-            <span class="admin-tab admin-tab-disabled"><i class="bi bi-ticket-perforated me-1"></i>Bookings</span>
+            <a class="admin-tab {% if active_tab == 'examiners' %}active{% endif %}"
+               href="{{ url_for('admin.examiners') }}">
+                <i class="bi bi-person-workspace me-1"></i>Examiners
+            </a>
+            <a class="admin-tab {% if active_tab == 'students' %}active{% endif %}"
+               href="{{ url_for('admin.students') }}">
+                <i class="bi bi-mortarboard me-1"></i>Students
+            </a>
+            <a class="admin-tab {% if active_tab == 'slots' %}active{% endif %}"
+               href="{{ url_for('admin.slots') }}">
+                <i class="bi bi-calendar3 me-1"></i>Slots
+            </a>
+            <a class="admin-tab {% if active_tab == 'bookings' %}active{% endif %}"
+               href="{{ url_for('admin.bookings') }}">
+                <i class="bi bi-ticket-perforated me-1"></i>Bookings
+            </a>
+            <a class="admin-tab {% if active_tab == 'search' %}active{% endif %}"
+               href="{{ url_for('admin.search') }}">
+                <i class="bi bi-search me-1"></i>Search
+            </a>
         </nav>
         {% block admin_content %}{% endblock %}
     </div>

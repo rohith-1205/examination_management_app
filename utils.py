@@ -4,6 +4,21 @@ from flask import flash, redirect, url_for
 from flask_login import current_user
 
 
+def update_slot_status(slot):
+    booked_seats = sum(
+        booking.status in ("Booked", "Completed") for booking in slot.bookings
+    )
+    slot.available_seats = max(slot.capacity - booked_seats, 0)
+
+    if slot.status not in ("Cancelled", "Completed"):
+        if slot.available_seats == 0:
+            slot.status = "Full"
+        else:
+            slot.status = "Available"
+
+    return slot
+
+
 def role_required(role):
     def decorator(view_func):
         @wraps(view_func)

@@ -1,0 +1,34 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Change Slot Examiner | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <a class="small text-decoration-none" href="{{ url_for('admin.slots') }}"><i class="bi bi-arrow-left me-1"></i>Back to slots</a>
+    <span class="eyebrow d-block mt-3">Schedule management</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Change slot examiner</h1>
+    <p class="text-secondary mb-0">{{ slot.exam.name }} · {{ slot.date.strftime("%b %d, %Y") }} · {{ slot.start_time.strftime("%H:%M") }}</p>
+</div>
+
+<section class="admin-panel course-form-panel">
+    {% if assignments %}
+        <form method="post">
+            <label for="examiner_id" class="form-label fw-medium">Examiner assigned to this exam</label>
+            <select class="form-select" id="examiner_id" name="examiner_id" required>
+                {% for assignment in assignments %}
+                    <option value="{{ assignment.examiner_id }}" {% if slot.examiner_id == assignment.examiner_id %}selected{% endif %}>
+                        {{ assignment.examiner.name }}{% if assignment.examiner.department %} · {{ assignment.examiner.department }}{% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+            <p class="form-text">The examiner cannot be changed if any booking in this slot has been evaluated.</p>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <button class="btn btn-primary rounded-pill px-4" type="submit"><i class="bi bi-check-lg me-2"></i>Save examiner</button>
+                <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('admin.slots') }}">Cancel</a>
+            </div>
+        </form>
+    {% else %}
+        <p class="text-secondary mb-0">No examiners have been assigned to this exam.</p>
+    {% endif %}
+</section>
+{% endblock %}

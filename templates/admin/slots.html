@@ -1,0 +1,87 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Slots | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <span class="eyebrow">Schedule management</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Exam slots</h1>
+    <p class="text-secondary mb-0">Review seat availability and assigned examiners across all exams.</p>
+</div>
+
+<section class="admin-panel">
+    <form method="get" action="{{ url_for('admin.slots') }}" class="row g-3 align-items-end mb-4">
+        <div class="col-md-6 col-xl-3">
+            <label for="exam-filter" class="form-label small fw-medium">Exam</label>
+            <select class="form-select" name="exam_id" id="exam-filter">
+                <option value="">All exams</option>
+                {% for exam in exams %}
+                    <option value="{{ exam.id }}" {% if exam_filter|string == exam.id|string %}selected{% endif %}>{{ exam.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <label for="examiner-filter" class="form-label small fw-medium">Examiner</label>
+            <select class="form-select" name="examiner_id" id="examiner-filter">
+                <option value="">All examiners</option>
+                {% for examiner in examiners %}
+                    <option value="{{ examiner.id }}" {% if examiner_filter|string == examiner.id|string %}selected{% endif %}>{{ examiner.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6 col-xl-2">
+            <label for="date-filter" class="form-label small fw-medium">Date</label>
+            <input class="form-control" type="date" name="date" id="date-filter" value="{{ date_filter }}">
+        </div>
+        <div class="col-md-6 col-xl-2">
+            <label for="status-filter" class="form-label small fw-medium">Status</label>
+            <select class="form-select" name="status" id="status-filter">
+                <option value="">All statuses</option>
+                {% for status in slot_statuses %}
+                    <option value="{{ status }}" {% if status_filter == status %}selected{% endif %}>{{ status }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-xl-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary rounded-pill flex-grow-1">Filter</button>
+            <a class="btn btn-outline-secondary rounded-pill" href="{{ url_for('admin.slots') }}" aria-label="Clear filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 fw-semibold mb-0">All slots</h2>
+        <span class="small text-secondary">{{ slots|length }} result{% if slots|length != 1 %}s{% endif %}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead><tr><th>Exam</th><th>Date and time</th><th>Examiner</th><th>Seats</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for slot in slots %}
+                    {% set booked_seats = slot.capacity - slot.available_seats %}
+                    {% set seat_percent = (booked_seats * 100 / slot.capacity)|round|int if slot.capacity else 0 %}
+                    <tr>
+                        <td><strong>{{ slot.exam.name }}</strong><small class="d-block text-secondary">{{ slot.exam.course.code }}</small></td>
+                        <td class="text-nowrap">{{ slot.date.strftime("%b %d, %Y") }}<small class="d-block text-secondary">{{ slot.start_time.strftime("%H:%M") }}–{{ slot.end_time.strftime("%H:%M") }}</small></td>
+                        <td>{{ slot.examiner.name }}</td>
+                        <td class="slot-seat-cell">
+                            <strong>{{ booked_seats }}/{{ slot.capacity }}</strong>
+                            <div class="progress slot-progress mt-1" role="progressbar" aria-label="Seats booked"
+                                 aria-valuenow="{{ seat_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar {% if slot.status == 'Full' %}bg-purple{% else %}bg-teal{% endif %}" style="width: {{ seat_percent }}%"></div>
+                            </div>
+                        </td>
+                        <td><span class="badge rounded-pill slot-status-{{ slot.status|lower }}">{{ slot.status }}</span></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('admin.change_slot_examiner', slot_id=slot.id) }}">
+                                <i class="bi bi-person-gear me-1"></i>Examiner
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center text-secondary py-5">No slots match these filters.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

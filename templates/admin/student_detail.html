@@ -1,0 +1,47 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ student.name }} | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <a class="small text-decoration-none" href="{{ url_for('admin.students') }}"><i class="bi bi-arrow-left me-1"></i>Back to students</a>
+    <span class="eyebrow d-block mt-3">Student profile</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">{{ student.name }}</h1>
+    <p class="text-secondary mb-0">{{ student.email }} · {{ student.roll_no }}{% if student.phone %} · {{ student.phone }}{% endif %}</p>
+</div>
+
+<section class="admin-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h5 fw-semibold mb-1">Full booking history</h2>
+            <p class="small text-secondary mb-0">Includes active, cancelled, and completed bookings.</p>
+        </div>
+        <span class="soft-label">{{ bookings|length }} booking{% if bookings|length != 1 %}s{% endif %}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead><tr><th>Booking</th><th>Exam</th><th>Slot</th><th>Booked at</th><th>Status</th><th>Evaluation</th></tr></thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr>
+                        <td><a href="{{ url_for('admin.bookings', search=booking.id) }}">#{{ booking.id }}</a></td>
+                        <td>{{ booking.exam.name }}</td>
+                        <td>{{ booking.slot.date.strftime("%b %d, %Y") }} · {{ booking.slot.start_time.strftime("%H:%M") }}</td>
+                        <td>{{ booking.booked_at.strftime("%b %d, %Y %H:%M") }}</td>
+                        <td><span class="badge rounded-pill booking-status-{{ booking.status|lower }}">{{ booking.status }}</span></td>
+                        <td>
+                            {% if booking.evaluation %}
+                                {{ booking.evaluation.total_marks }} / {{ booking.exam.max_marks }} marks
+                            {% else %}
+                                <span class="text-secondary">Not evaluated</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center text-secondary py-5">This student has no bookings yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

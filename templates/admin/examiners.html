@@ -1,0 +1,75 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Examiners | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Account management</span>
+        <h1 class="h2 fw-bold mt-2 mb-1">Examiners</h1>
+        <p class="text-secondary mb-0">Review approvals and manage examiner access.</p>
+    </div>
+    <a class="btn btn-primary rounded-pill px-4" href="{{ url_for('admin.add_examiner') }}">
+        <i class="bi bi-person-plus me-2"></i>Add examiner
+    </a>
+</div>
+
+<nav class="status-tabs mb-3" aria-label="Examiner status">
+    {% for status, label in [('pending', 'Pending'), ('active', 'Active'), ('inactive', 'Inactive')] %}
+        <a class="status-tab {% if selected_status == status %}active{% endif %}"
+           href="{{ url_for('admin.examiners', status=status) }}">
+            {{ label }}
+        </a>
+    {% endfor %}
+</nav>
+
+<section class="admin-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h6 fw-semibold mb-0">{{ selected_status|title }} examiners</h2>
+        <span class="small text-secondary">{{ examiners|length }} result{% if examiners|length != 1 %}s{% endif %}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead>
+                <tr><th>Examiner</th><th>Department</th><th>Phone</th><th>Joined</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for examiner in examiners %}
+                    <tr>
+                        <td>
+                            <span class="fw-semibold">{{ examiner.name }}</span>
+                            <span class="d-block small text-secondary">{{ examiner.email }}</span>
+                        </td>
+                        <td>{{ examiner.department or "—" }}</td>
+                        <td>{{ examiner.phone or "—" }}</td>
+                        <td>{{ examiner.created_at.strftime("%b %d, %Y") }}</td>
+                        <td class="text-end">
+                            {% if examiner.status == 'pending' %}
+                                <form class="d-inline" method="post" action="{{ url_for('admin.update_examiner', examiner_id=examiner.id, action='approve') }}">
+                                    <button class="btn btn-sm btn-success rounded-pill" type="submit">
+                                        <i class="bi bi-check-lg me-1"></i>Approve
+                                    </button>
+                                </form>
+                            {% elif examiner.status == 'active' %}
+                                <form class="d-inline" method="post" action="{{ url_for('admin.update_examiner', examiner_id=examiner.id, action='deactivate') }}">
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">
+                                        <i class="bi bi-person-x me-1"></i>Deactivate
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form class="d-inline" method="post" action="{{ url_for('admin.update_examiner', examiner_id=examiner.id, action='reactivate') }}">
+                                    <button class="btn btn-sm btn-outline-success rounded-pill" type="submit">
+                                        <i class="bi bi-person-check me-1"></i>Reactivate
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-center text-secondary py-5">No {{ selected_status }} examiners.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

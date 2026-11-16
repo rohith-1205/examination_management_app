@@ -1,0 +1,41 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Reschedule Booking | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <a class="small text-decoration-none" href="{{ url_for('admin.bookings') }}"><i class="bi bi-arrow-left me-1"></i>Back to bookings</a>
+    <span class="eyebrow d-block mt-3">Booking management</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Reschedule booking #{{ booking.id }}</h1>
+    <p class="text-secondary mb-0">{{ booking.student.name }} · {{ booking.exam.name }}</p>
+</div>
+
+<section class="admin-panel course-form-panel">
+    <div class="current-slot mb-4">
+        <span class="small text-secondary">Current slot</span>
+        <strong class="d-block">{{ booking.slot.date.strftime("%b %d, %Y") }} · {{ booking.slot.start_time.strftime("%H:%M") }}–{{ booking.slot.end_time.strftime("%H:%M") }}</strong>
+        <span class="small text-secondary">Examiner: {{ booking.slot.examiner.name }}</span>
+    </div>
+    {% if available_slots %}
+        <form method="post">
+            <label for="slot_id" class="form-label fw-medium">Choose a new slot</label>
+            <select class="form-select" id="slot_id" name="slot_id" required>
+                <option value="">Available slots for {{ booking.exam.name }}</option>
+                {% for slot in available_slots %}
+                    <option value="{{ slot.id }}">
+                        {{ slot.date.strftime("%b %d, %Y") }} · {{ slot.start_time.strftime("%H:%M") }}–{{ slot.end_time.strftime("%H:%M") }}
+                        · {{ slot.available_seats }} seat{% if slot.available_seats != 1 %}s{% endif %} · {{ slot.examiner.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <p class="form-text">The current slot will be freed after the new slot is reserved.</p>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <button class="btn btn-primary rounded-pill px-4" type="submit"><i class="bi bi-arrow-repeat me-2"></i>Confirm reschedule</button>
+                <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('admin.bookings') }}">Cancel</a>
+            </div>
+        </form>
+    {% else %}
+        <div class="alert alert-info mb-0">There are no other available slots with free seats for this exam.</div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,5 +1,6 @@
 from datetime import date
 from math import isfinite
+import re
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy import func, or_
@@ -15,7 +16,7 @@ from models import (
     User,
     db,
 )
-from utils import role_required
+from utils import role_required, update_slot_status
 
 admin_bp = Blueprint("admin", __name__)
 EXAM_TYPES = ("Viva", "Practical", "Project Demo", "Assessment")
@@ -43,6 +44,362 @@ def dashboard():
         stats=stats,
         recent_bookings=recent_bookings,
         active_tab="dashboard",
+    )
+
+
+@admin_bp.route("/examiners")
+@role_required("admin")
+def examiners():
+    selected_status = request.args.get("status", "pending").strip().lower()
+    if selected_status not in ("pending", "active", "inactive"):
+        selected_status = "pending"
+
+    examiner_list = User.query.filter_by(
+        role="examiner", status=selected_status
+    ).order_by(User.name.asc()).all()
+    return render_template(
+        "admin/examiners.html",
+        examiners=examiner_list,
+        selected_status=selected_status,
+        active_tab="examiners",
+    )
+
+
+@admin_bp.route("/examiners/add", methods=["GET", "POST"])
+@role_required("admin")
+def add_examiner():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        phone = request.form.get("phone", "").strip()
+        department = request.form.get("department", "").strip()
+        password = request.form.get("password", "")
+
+        errors = []
+        if not name or not email or not department or not password:
+            errors.append("Name, email, department, and password are required.")
+        if email and not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+            errors.append("Enter a valid email address.")
+        if len(password) < 6:
+            errors.append("Password must be at least 6 characters long.")
+        if email and User.query.filter(func.lower(User.email) == email).first():
+            errors.append("An account with that email already exists.")
+
+        if errors:
+            for error in errors:
+                flash(error, "danger")
+            return render_template(
+                "admin/examiner_form.html",
+                form_values=request.form,
+                active_tab="examiners",
+            ), 400
+
+        examiner = User(
+            name=name,
+            email=email,
+            phone=phone or None,
+            department=department,
+            role="examiner",
+            status="active",
+        )
+        examiner.set_password(password)
+        db.session.add(examiner)
+        db.session.commit()
+        flash("Examiner added and activated.", "success")
+        return redirect(url_for("admin.examiners", status="active"))
+
+    return render_template(
+        "admin/examiner_form.html",
+        active_tab="examiners",
+    )
+
+
+@admin_bp.route("/examiners/<int:examiner_id>/<action>", methods=["POST"])
+@role_required("admin")
+def update_examiner(examiner_id, action):
+    examiner = db.get_or_404(User, examiner_id)
+    if examiner.role != "examiner":
+        flash("That account is not an examiner.", "danger")
+        return redirect(url_for("admin.examiners"))
+
+    transitions = {
+        ("pending", "approve"): ("active", "Examiner approved."),
+        ("active", "deactivate"): ("inactive", "Examiner deactivated."),
+        ("inactive", "reactivate"): ("active", "Examiner reactivated."),
+    }
+    transition = transitions.get((examiner.status, action))
+    if transition is None:
+        flash("That examiner action is not available.", "warning")
+    else:
+        examiner.status, message = transition
+        db.session.commit()
+        flash(message, "success")
+    return redirect(url_for("admin.examiners", status=examiner.status))
+
+
+@admin_bp.route("/students")
+@role_required("admin")
+def students():
+    search = request.args.get("search", "").strip()
+    query = User.query.filter_by(role="student")
+    if search:
+        pattern = f"%{search}%"
+        query = query.filter(
+            or_(
+                User.name.ilike(pattern),
+                User.email.ilike(pattern),
+                User.roll_no.ilike(pattern),
+            )
+        )
+
+    student_list = query.order_by(User.name.asc()).all()
+    return render_template(
+        "admin/students.html",
+        students=student_list,
+        search=search,
+        active_tab="students",
+    )
+
+
+@admin_bp.route("/students/<int:student_id>")
+@role_required("admin")
+def student_detail(student_id):
+    student = db.get_or_404(User, student_id)
+    if student.role != "student":
+        flash("That account is not a student.", "danger")
+        return redirect(url_for("admin.students"))
+
+    booking_history = Booking.query.filter_by(student_id=student.id).order_by(
+        Booking.booked_at.desc()
+    ).all()
+    return render_template(
+        "admin/student_detail.html",
+        student=student,
+        bookings=booking_history,
+        active_tab="students",
+    )
+
+
+@admin_bp.route("/slots")
+@role_required("admin")
+def slots():
+    exam_filter = request.args.get("exam_id", "").strip()
+    examiner_filter = request.args.get("examiner_id", "").strip()
+    date_filter = request.args.get("date", "").strip()
+    status_filter = request.args.get("status", "").strip()
+
+    query = Slot.query
+    try:
+        if exam_filter:
+            query = query.filter_by(exam_id=int(exam_filter))
+    except ValueError:
+        exam_filter = ""
+
+    try:
+        if examiner_filter:
+            query = query.filter_by(examiner_id=int(examiner_filter))
+    except ValueError:
+        examiner_filter = ""
+
+    if date_filter:
+        try:
+            query = query.filter_by(date=date.fromisoformat(date_filter))
+        except ValueError:
+            flash("Enter a valid slot date.", "warning")
+            date_filter = ""
+
+    if status_filter in ("Available", "Full", "Cancelled", "Completed"):
+        query = query.filter_by(status=status_filter)
+
+    slot_list = query.order_by(Slot.date.asc(), Slot.start_time.asc()).all()
+    return render_template(
+        "admin/slots.html",
+        slots=slot_list,
+        exams=Exam.query.order_by(Exam.name.asc()).all(),
+        examiners=User.query.filter_by(role="examiner").order_by(User.name.asc()).all(),
+        exam_filter=exam_filter,
+        examiner_filter=examiner_filter,
+        date_filter=date_filter,
+        status_filter=status_filter,
+        slot_statuses=("Available", "Full", "Cancelled", "Completed"),
+        active_tab="slots",
+    )
+
+
+@admin_bp.route("/slots/<int:slot_id>/change-examiner", methods=["GET", "POST"])
+@role_required("admin")
+def change_slot_examiner(slot_id):
+    slot = db.get_or_404(Slot, slot_id)
+    if request.method == "POST":
+        if any(booking.evaluation is not None for booking in slot.bookings):
+            flash("The examiner cannot be changed after a booking is evaluated.", "danger")
+            return redirect(url_for("admin.slots"))
+
+        try:
+            examiner_id = int(request.form.get("examiner_id", ""))
+        except ValueError:
+            examiner_id = None
+
+        assignment = ExamExaminer.query.filter_by(
+            exam_id=slot.exam_id, examiner_id=examiner_id
+        ).first() if examiner_id else None
+        if assignment is None:
+            flash("Choose an examiner assigned to this exam.", "danger")
+        else:
+            slot.examiner_id = assignment.examiner_id
+            db.session.commit()
+            flash("Slot examiner changed successfully.", "success")
+        return redirect(url_for("admin.slots"))
+
+    if any(booking.evaluation is not None for booking in slot.bookings):
+        flash("The examiner cannot be changed after a booking is evaluated.", "danger")
+        return redirect(url_for("admin.slots"))
+
+    assignments = ExamExaminer.query.filter_by(exam_id=slot.exam_id).all()
+    return render_template(
+        "admin/slot_examiner_form.html",
+        slot=slot,
+        assignments=assignments,
+        active_tab="slots",
+    )
+
+
+@admin_bp.route("/bookings")
+@role_required("admin")
+def bookings():
+    search = request.args.get("search", "").strip()
+    status_filter = request.args.get("status", "").strip()
+    query = Booking.query.join(User, Booking.student_id == User.id)
+    if search:
+        pattern = f"%{search}%"
+        search_terms = [
+            User.name.ilike(pattern),
+            User.roll_no.ilike(pattern),
+        ]
+        if search.isdigit():
+            search_terms.append(Booking.id == int(search))
+        query = query.filter(or_(*search_terms))
+
+    if status_filter in ("Booked", "Cancelled", "Completed"):
+        query = query.filter(Booking.status == status_filter)
+
+    booking_list = query.order_by(Booking.booked_at.desc(), Booking.id.desc()).all()
+    return render_template(
+        "admin/bookings.html",
+        bookings=booking_list,
+        search=search,
+        status_filter=status_filter,
+        booking_statuses=("Booked", "Cancelled", "Completed"),
+        active_tab="bookings",
+    )
+
+
+@admin_bp.route("/bookings/<int:booking_id>/reschedule", methods=["GET", "POST"])
+@role_required("admin")
+def reschedule_booking(booking_id):
+    booking = db.get_or_404(Booking, booking_id)
+    if booking.evaluation is not None:
+        flash("This booking has been evaluated and cannot be rescheduled.", "danger")
+        return redirect(url_for("admin.bookings"))
+    if booking.status != "Booked":
+        flash("Only active bookings can be rescheduled.", "warning")
+        return redirect(url_for("admin.bookings"))
+
+    available_slots = Slot.query.filter(
+        Slot.exam_id == booking.exam_id,
+        Slot.id != booking.slot_id,
+        Slot.status == "Available",
+        Slot.available_seats > 0,
+    ).order_by(Slot.date.asc(), Slot.start_time.asc()).all()
+
+    if request.method == "POST":
+        try:
+            new_slot_id = int(request.form.get("slot_id", ""))
+        except ValueError:
+            new_slot_id = None
+
+        new_slot = db.session.get(Slot, new_slot_id) if new_slot_id else None
+        if (
+            new_slot is None
+            or new_slot.exam_id != booking.exam_id
+            or new_slot.id == booking.slot_id
+        ):
+            flash("Choose an available slot for the same exam.", "danger")
+            return render_template(
+                "admin/booking_reschedule.html",
+                booking=booking,
+                available_slots=available_slots,
+                active_tab="bookings",
+            ), 400
+
+        old_slot = booking.slot
+        update_slot_status(new_slot)
+        if new_slot.status != "Available" or new_slot.available_seats <= 0:
+            flash("That slot no longer has available seats.", "danger")
+            return redirect(url_for("admin.reschedule_booking", booking_id=booking.id))
+
+        booking.slot = new_slot
+        booking.rescheduled = True
+        update_slot_status(old_slot)
+        update_slot_status(new_slot)
+        db.session.commit()
+        flash("Booking rescheduled successfully.", "success")
+        return redirect(url_for("admin.bookings"))
+
+    return render_template(
+        "admin/booking_reschedule.html",
+        booking=booking,
+        available_slots=available_slots,
+        active_tab="bookings",
+    )
+
+
+@admin_bp.route("/search")
+@role_required("admin")
+def search():
+    term = request.args.get("q", "").strip()
+    students = []
+    examiners = []
+    exams = []
+    matching_bookings = []
+    if term:
+        pattern = f"%{term}%"
+        students = User.query.filter(
+            User.role == "student",
+            or_(
+                User.name.ilike(pattern),
+                User.email.ilike(pattern),
+                User.roll_no.ilike(pattern),
+            ),
+        ).limit(10).all()
+        examiners = User.query.filter(
+            User.role == "examiner",
+            or_(User.name.ilike(pattern), User.email.ilike(pattern)),
+        ).limit(10).all()
+        exams = Exam.query.filter(Exam.name.ilike(pattern)).limit(10).all()
+
+        booking_query = Booking.query.join(User, Booking.student_id == User.id)
+        booking_filters = [
+            User.name.ilike(pattern),
+            User.roll_no.ilike(pattern),
+        ]
+        if term.isdigit():
+            booking_filters.append(Booking.id == int(term))
+        matching_bookings = (
+            booking_query.filter(or_(*booking_filters))
+            .order_by(Booking.booked_at.desc())
+            .limit(10)
+            .all()
+        )
+
+    return render_template(
+        "admin/search.html",
+        term=term,
+        students=students,
+        examiners=examiners,
+        exams=exams,
+        bookings=matching_bookings,
+        active_tab="search",
     )
 
 

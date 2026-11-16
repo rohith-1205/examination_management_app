@@ -1,0 +1,55 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Students | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <span class="eyebrow">Account management</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Students</h1>
+    <p class="text-secondary mb-0">Find students and review their booking history.</p>
+</div>
+
+<section class="admin-panel">
+    <form method="get" action="{{ url_for('admin.students') }}" class="row g-2 mb-4">
+        <div class="col-sm">
+            <label for="student-search" class="visually-hidden">Search students</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search text-primary"></i></span>
+                <input class="form-control" type="search" id="student-search" name="search"
+                       value="{{ search }}" placeholder="Search name, email, or roll number">
+            </div>
+        </div>
+        <div class="col-sm-auto d-flex gap-2">
+            <button class="btn btn-primary rounded-pill px-4" type="submit">Search</button>
+            {% if search %}<a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('admin.students') }}">Clear</a>{% endif %}
+        </div>
+    </form>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 fw-semibold mb-0">Student list</h2>
+        <span class="small text-secondary">{{ students|length }} result{% if students|length != 1 %}s{% endif %}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead><tr><th>Student</th><th>Roll number</th><th>Phone</th><th>Bookings</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for student in students %}
+                    <tr>
+                        <td><strong>{{ student.name }}</strong><small class="d-block text-secondary">{{ student.email }}</small></td>
+                        <td><span class="course-code">{{ student.roll_no or "—" }}</span></td>
+                        <td>{{ student.phone or "—" }}</td>
+                        <td>{{ student.bookings|length }}</td>
+                        <td><span class="badge rounded-pill {% if student.status == 'active' %}course-active{% else %}course-inactive{% endif %}">{{ student.status|title }}</span></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('admin.student_detail', student_id=student.id) }}">
+                                <i class="bi bi-clock-history me-1"></i>History
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center text-secondary py-5">No students found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
