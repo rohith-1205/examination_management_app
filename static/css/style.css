@@ -30,6 +30,87 @@ main {
     letter-spacing: 0.04em;
 }
 
+.auth-page {
+    min-height: 72vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(45, 212, 191, 0.28), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(139, 92, 246, 0.32), transparent 32%),
+        linear-gradient(135deg, #4338ca, #7c3aed 55%, #0f9f9a);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 470px;
+    padding: 2.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 1.5rem;
+    background: rgba(255, 255, 255, 0.91);
+    box-shadow: 0 24px 70px rgba(24, 21, 74, 0.25);
+    backdrop-filter: blur(14px);
+}
+
+.auth-card-wide {
+    max-width: 760px;
+}
+
+.auth-icon {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    place-items: center;
+    border-radius: 1.2rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--color-indigo), var(--color-purple), var(--color-teal));
+    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.25);
+    font-size: 1.7rem;
+}
+
+.auth-icon-warm {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+
+.auth-input .input-group-text {
+    border-color: #e4e6f0;
+    background: #f7f8ff;
+    color: var(--color-indigo);
+}
+
+.auth-input .form-control,
+.auth-input .form-select {
+    border-color: #e4e6f0;
+}
+
+.auth-input .form-control:focus,
+.auth-input .form-select:focus {
+    border-color: #8b83f1;
+    box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.12);
+}
+
+.auth-link {
+    color: var(--color-indigo);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    color: var(--color-purple);
+    text-decoration: underline;
+}
+
+.dashboard-card {
+    padding: 2rem;
+    border: 1px solid rgba(79, 70, 229, 0.08);
+    border-radius: 1.4rem;
+    background: #fff;
+    box-shadow: var(--shadow-soft);
+}
+
 .hero-section {
     overflow: hidden;
     background:

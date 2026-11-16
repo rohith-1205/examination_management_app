@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Login | Examination Management Portal{% endblock %}
+
+{% block content %}
+<section class="auth-page py-5">
+    <div class="auth-card">
+        <div class="auth-heading text-center">
+            <div class="auth-icon"><i class="bi bi-person-lock"></i></div>
+            <span class="eyebrow mt-3">Welcome back</span>
+            <h1 class="h3 fw-bold mt-2">Sign in to EMP</h1>
+            <p class="text-secondary mb-0">Use your registered email and password.</p>
+        </div>
+        <form method="post" class="mt-4">
+            <div class="mb-3">
+                <label for="email" class="form-label fw-medium">Email address</label>
+                <div class="input-group input-group-lg auth-input">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input type="email" class="form-control" id="email" name="email"
+                           value="{{ request.form.get('email', '') }}" autocomplete="email" required>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="password" class="form-label fw-medium">Password</label>
+                <div class="input-group input-group-lg auth-input">
+                    <span class="input-group-text"><i class="bi bi-key"></i></span>
+                    <input type="password" class="form-control" id="password" name="password"
+                           autocomplete="current-password" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg rounded-pill w-100">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+            </button>
+        </form>
+        <p class="text-center text-secondary mt-4 mb-0">
+            New to EMP? <a href="{{ url_for('auth.register') }}" class="auth-link">Create an account</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

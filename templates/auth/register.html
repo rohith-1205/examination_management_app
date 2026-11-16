@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Register | Examination Management Portal{% endblock %}
+
+{% block content %}
+<section class="auth-page py-5">
+    <div class="auth-card auth-card-wide">
+        <div class="auth-heading text-center">
+            <div class="auth-icon"><i class="bi bi-person-plus"></i></div>
+            <span class="eyebrow mt-3">Join the portal</span>
+            <h1 class="h3 fw-bold mt-2">Create your account</h1>
+            <p class="text-secondary mb-0">Register as an examiner or a student.</p>
+        </div>
+        <form method="post" class="mt-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="name" class="form-label fw-medium">Full name</label>
+                    <div class="input-group auth-input">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" class="form-control" id="name" name="name"
+                               value="{{ request.form.get('name', '') }}" autocomplete="name" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="email" class="form-label fw-medium">Email address</label>
+                    <div class="input-group auth-input">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input type="email" class="form-control" id="email" name="email"
+                               value="{{ request.form.get('email', '') }}" autocomplete="email" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="phone" class="form-label fw-medium">Phone <span class="text-secondary">(optional)</span></label>
+                    <div class="input-group auth-input">
+                        <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                        <input type="tel" class="form-control" id="phone" name="phone"
+                               value="{{ request.form.get('phone', '') }}" autocomplete="tel">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="role" class="form-label fw-medium">I am a</label>
+                    <div class="input-group auth-input">
+                        <span class="input-group-text"><i class="bi bi-people"></i></span>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="" disabled {% if not request.form.get('role') %}selected{% endif %}>Choose a role</option>
+                            <option value="examiner" {% if request.form.get('role') == 'examiner' %}selected{% endif %}>Examiner</option>
+                            <option value="student" {% if request.form.get('role') == 'student' %}selected{% endif %}>Student</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="department" class="form-label fw-medium">Department <span class="text-secondary">(examiners)</span></label>
+                    <div class="input-group auth-input">
+                        <span class="input-group-text"><i class="bi bi-building"></i></span>
+                        <input type="text" class="form-control" id="department" name="department"
+                               value="{{ request.form.get('department', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="roll_no" class="form-label fw-medium">Roll number <span class="text-secondary">(students)</span></label>
+                    <div class="input-group auth-input">
+                        <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                        <input type="text" class="form-control" id="roll_no" name="roll_no"
+                               value="{{ request.form.get('roll_no', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="password" class="form-label fw-medium">Password</label>
+                    <div class="input-group auth-input">
+                        <span class="input-group-text"><i class="bi bi-key"></i></span>
+                        <input type="password" class="form-control" id="password" name="password"
+                               autocomplete="new-password" minlength="6" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="confirm_password" class="form-label fw-medium">Confirm password</label>
+                    <div class="input-group auth-input">
+                        <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                               autocomplete="new-password" minlength="6" required>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg rounded-pill w-100 mt-4">
+                <i class="bi bi-person-check me-2"></i>Create account
+            </button>
+        </form>
+        <p class="text-center text-secondary mt-4 mb-0">
+            Already registered? <a href="{{ url_for('auth.login') }}" class="auth-link">Login</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

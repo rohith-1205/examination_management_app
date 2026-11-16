@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Approval Pending | Examination Management Portal{% endblock %}
+
+{% block content %}
+<section class="auth-page py-5">
+    <div class="auth-card text-center">
+        <div class="auth-icon auth-icon-warm"><i class="bi bi-hourglass-split"></i></div>
+        <span class="eyebrow mt-3">One more step</span>
+        <h1 class="h3 fw-bold mt-2">Waiting for admin approval</h1>
+        <p class="text-secondary mt-3 mb-4">
+            Your examiner account has been submitted. You can log in once an administrator approves it.
+        </p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-house me-2"></i>Back to home
+        </a>
+    </div>
+</section>
+{% endblock %}
