@@ -401,19 +401,28 @@ def search():
     matching_bookings = []
     if term:
         pattern = f"%{term}%"
+        student_filters = [
+            User.name.ilike(pattern),
+            User.email.ilike(pattern),
+            User.roll_no.ilike(pattern),
+        ]
+        examiner_filters = [User.name.ilike(pattern), User.email.ilike(pattern)]
+        exam_filters = [Exam.name.ilike(pattern)]
+        if term.isdigit():
+            record_id = int(term)
+            student_filters.append(User.id == record_id)
+            examiner_filters.append(User.id == record_id)
+            exam_filters.append(Exam.id == record_id)
+
         students = User.query.filter(
             User.role == "student",
-            or_(
-                User.name.ilike(pattern),
-                User.email.ilike(pattern),
-                User.roll_no.ilike(pattern),
-            ),
+            or_(*student_filters),
         ).limit(10).all()
         examiners = User.query.filter(
             User.role == "examiner",
-            or_(User.name.ilike(pattern), User.email.ilike(pattern)),
+            or_(*examiner_filters),
         ).limit(10).all()
-        exams = Exam.query.filter(Exam.name.ilike(pattern)).limit(10).all()
+        exams = Exam.query.filter(or_(*exam_filters)).limit(10).all()
 
         booking_query = Booking.query.join(User, Booking.student_id == User.id)
         booking_filters = [
@@ -421,7 +430,7 @@ def search():
             User.roll_no.ilike(pattern),
         ]
         if term.isdigit():
-            booking_filters.append(Booking.id == int(term))
+            booking_filters.append(Booking.id == record_id)
         matching_bookings = (
             booking_query.filter(or_(*booking_filters))
             .order_by(Booking.booked_at.desc())

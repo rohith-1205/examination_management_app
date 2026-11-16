@@ -12,7 +12,7 @@
 <section class="admin-panel mb-4">
     <form method="get" action="{{ url_for('admin.search') }}" class="input-group input-group-lg">
         <span class="input-group-text bg-white"><i class="bi bi-search text-primary"></i></span>
-        <input class="form-control" type="search" name="q" value="{{ term }}" placeholder="Name, email, roll number, exam, or booking ID">
+        <input class="form-control" type="search" name="q" value="{{ term }}" placeholder="Name, email, roll number, or record ID">
         <button class="btn btn-primary px-4" type="submit">Search</button>
     </form>
 </section>

@@ -34,6 +34,19 @@ def dashboard():
         Exam.booking_end >= today,
     ).order_by(Exam.booking_end.asc()).all()
 
+    available_slots = Slot.query.join(Exam, Slot.exam_id == Exam.id).filter(
+        Exam.status == "Booking Open",
+        Exam.booking_start <= today,
+        Exam.booking_end >= today,
+        Slot.status == "Available",
+        Slot.available_seats > 0,
+        ~Booking.query.filter(
+            Booking.student_id == current_user.id,
+            Booking.exam_id == Slot.exam_id,
+            Booking.status == "Booked",
+        ).exists(),
+    ).order_by(Slot.date.asc(), Slot.start_time.asc()).all()
+
     active_bookings = Booking.query.filter_by(
         student_id=current_user.id, status="Booked"
     ).order_by(Booking.booked_at.desc()).all()
@@ -54,11 +67,13 @@ def dashboard():
     return render_template(
         "student/dashboard.html",
         available_exams=available_exams,
+        available_slots=available_slots,
         upcoming_bookings=upcoming_bookings[:5],
         my_bookings=active_bookings[:5],
         published_results=published_results[:5],
         stats={
             "available_exams": len(available_exams),
+            "available_slots": len(available_slots),
             "upcoming_bookings": len(upcoming_bookings),
             "my_bookings": len(active_bookings),
             "published_results": len(published_results),

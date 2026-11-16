@@ -18,6 +18,12 @@
     </div>
     <div class="col-sm-6 col-xl-3">
         <div class="admin-stat stat-teal">
+            <div><span class="stat-label">Available slots</span><strong>{{ stats.available_slots }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-calendar-plus"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-teal">
             <div><span class="stat-label">Upcoming booked exams</span><strong>{{ stats.upcoming_bookings }}</strong></div>
             <span class="stat-icon"><i class="bi bi-calendar-event"></i></span>
         </div>
@@ -56,6 +62,43 @@
             </div>
         {% else %}
             <div class="col-12"><p class="text-secondary mb-0">There are no exams open for booking right now.</p></div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="admin-panel mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h5 fw-semibold mb-1">Available slots</h2>
+            <p class="small text-secondary mb-0">Book a seat in an exam that is open for booking.</p>
+        </div>
+        <span class="soft-label">{{ available_slots|length }} available</span>
+    </div>
+    <div class="row g-3">
+        {% for slot in available_slots %}
+            <div class="col-md-6 col-xl-4">
+                <article class="available-slot-card h-100">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="slot-date-badge"><strong>{{ slot.date.strftime("%d") }}</strong><small>{{ slot.date.strftime("%b") }}</small></span>
+                        <span class="seat-count"><i class="bi bi-person-check me-1"></i>{{ slot.available_seats }} seat{% if slot.available_seats != 1 %}s{% endif %} left</span>
+                    </div>
+                    <h3 class="h6 fw-semibold mt-3 mb-1">{{ slot.exam.name }}</h3>
+                    <p class="small text-secondary mb-3">
+                        {{ slot.date.strftime("%b %d, %Y") }} · {{ slot.start_time.strftime("%H:%M") }}–{{ slot.end_time.strftime("%H:%M") }}<br>
+                        <i class="bi bi-person-workspace me-1"></i>{{ slot.examiner.name }}
+                    </p>
+                    <form method="post" action="{{ url_for('student.book_exam', exam_id=slot.exam_id) }}">
+                        <input type="hidden" name="slot_id" value="{{ slot.id }}">
+                        <button class="btn btn-primary btn-sm rounded-pill w-100" type="submit">
+                            <i class="bi bi-ticket-perforated me-1"></i>Book
+                        </button>
+                    </form>
+                </article>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p class="text-secondary mb-0"><i class="bi bi-calendar-x me-2"></i>No bookable slots are available right now.</p>
+            </div>
         {% endfor %}
     </div>
 </section>
