@@ -1,0 +1,70 @@
+{% extends "examiner/layout.html" %}
+
+{% block title %}{{ exam.name }} Slots | Examination Management Portal{% endblock %}
+
+{% block examiner_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <a class="small text-decoration-none" href="{{ url_for('examiner.dashboard') }}"><i class="bi bi-arrow-left me-1"></i>Back to dashboard</a>
+        <span class="eyebrow d-block mt-3">{{ exam.course.code }} · {{ exam.exam_type }}</span>
+        <h1 class="h2 fw-bold mt-2 mb-1">{{ exam.name }}</h1>
+        <p class="text-secondary mb-0">Manage your slots for this assigned exam.</p>
+    </div>
+    <span class="badge rounded-pill exam-status-{{ exam.status|lower|replace(' ', '-') }} fs-6">{{ exam.status }}</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <section class="admin-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="h5 fw-semibold mb-1">My slots</h2>
+                    <p class="small text-secondary mb-0">Only your slots for this exam are shown.</p>
+                </div>
+                <span class="soft-label">{{ slots|length }} slots</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle admin-table mb-0">
+                    <thead><tr><th>Date and time</th><th>Seats</th><th>Status</th><th>Students</th><th></th></tr></thead>
+                    <tbody>
+                        {% for slot in slots %}
+                            {% set booked_count = slot.capacity - slot.available_seats %}
+                            <tr>
+                                <td class="text-nowrap"><strong>{{ slot.date.strftime("%b %d, %Y") }}</strong><small class="d-block text-secondary">{{ slot.start_time.strftime("%H:%M") }}–{{ slot.end_time.strftime("%H:%M") }}</small></td>
+                                <td>{{ booked_count }}/{{ slot.capacity }}</td>
+                                <td><span class="badge rounded-pill slot-status-{{ slot.status|lower }}">{{ slot.status }}</span></td>
+                                <td><a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('examiner.slot_students', slot_id=slot.id) }}"><i class="bi bi-people me-1"></i>View</a></td>
+                                <td class="text-end text-nowrap">
+                                    {% if not slot.bookings and exam.status not in ('Booking Open', 'Closed', 'Completed') %}
+                                        <a class="btn btn-sm btn-outline-secondary rounded-pill" href="{{ url_for('examiner.edit_slot', slot_id=slot.id) }}" aria-label="Edit slot"><i class="bi bi-pencil"></i></a>
+                                        <form class="d-inline" method="post" action="{{ url_for('examiner.delete_slot', slot_id=slot.id) }}">
+                                            <button class="btn btn-sm btn-outline-danger rounded-pill ms-1" type="submit"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    {% else %}
+                                        <span class="small text-secondary">Locked</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="text-center text-secondary py-5">You have not created any slots for this exam.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+    <div class="col-lg-5">
+        <section class="admin-panel">
+            <h2 class="h5 fw-semibold mb-1">Create a slot</h2>
+            <p class="small text-secondary mb-3">Set a time and student capacity.</p>
+            {% if can_create %}
+                {% include "examiner/slot_fields.html" %}
+            {% else %}
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-info-circle me-2"></i>{{ disabled_message }}
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

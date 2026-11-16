@@ -1,0 +1,29 @@
+{% set values = form_values if form_values is defined else none %}
+<form method="post" action="{{ url_for('examiner.exam_slots', exam_id=exam.id) }}">
+    <div class="mb-3">
+        <label for="date" class="form-label fw-medium">Slot date</label>
+        <input class="form-control" type="date" id="date" name="date"
+               value="{{ values.get('date', '') if values else '' }}" required>
+        <div class="form-text">The slot date must be after {{ exam.booking_start.strftime("%b %d, %Y") }}.</div>
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-6">
+            <label for="start_time" class="form-label fw-medium">Start time</label>
+            <input class="form-control" type="time" id="start_time" name="start_time"
+                   value="{{ values.get('start_time', '') if values else '' }}" required>
+        </div>
+        <div class="col-6">
+            <label for="end_time" class="form-label fw-medium">End time</label>
+            <input class="form-control" type="time" id="end_time" name="end_time"
+                   value="{{ values.get('end_time', '') if values else '' }}" required>
+        </div>
+    </div>
+    <div class="mb-4">
+        <label for="capacity" class="form-label fw-medium">Student capacity</label>
+        <input class="form-control" type="number" id="capacity" name="capacity" min="1"
+               value="{{ values.get('capacity', '1') if values else '1' }}" required>
+    </div>
+    <button class="btn btn-primary rounded-pill w-100" type="submit">
+        <i class="bi bi-calendar-plus me-2"></i>Create slot
+    </button>
+</form>

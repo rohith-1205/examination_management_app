@@ -1,0 +1,105 @@
+{% extends "examiner/layout.html" %}
+
+{% block title %}Examiner Dashboard | Examination Management Portal{% endblock %}
+
+{% block examiner_content %}
+<div class="mb-4">
+    <span class="eyebrow">Examiner workspace</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Welcome, {{ current_user.name }}</h1>
+    <p class="text-secondary mb-0">Your assigned exams, schedules, and evaluation workload.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-indigo">
+            <div><span class="stat-label">Assigned exams</span><strong>{{ stats.assigned_exams }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-file-earmark-check"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-teal">
+            <div><span class="stat-label">Slots created</span><strong>{{ stats.slots_created }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-calendar-plus"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-purple">
+            <div><span class="stat-label">Students booked</span><strong>{{ stats.students_booked }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-mortarboard"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-orange">
+            <div><span class="stat-label">Pending evaluations</span><strong>{{ stats.pending_evaluations }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-clipboard-check"></i></span>
+        </div>
+    </div>
+</div>
+
+<section class="admin-panel mb-4" id="assigned-exams">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h5 fw-semibold mb-1">Assigned exams</h2>
+            <p class="small text-secondary mb-0">Open an exam to manage your slots.</p>
+        </div>
+        <span class="soft-label">{{ assigned_exams|length }} assigned</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead><tr><th>Exam</th><th>Course</th><th>Type</th><th>Slot creation period</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for exam in assigned_exams %}
+                    <tr>
+                        <td><strong>{{ exam.name }}</strong><small class="d-block text-secondary">{{ exam.duration_minutes }} min · {{ exam.max_marks }} marks</small></td>
+                        <td><span class="course-code">{{ exam.course.code }}</span></td>
+                        <td>{{ exam.exam_type }}</td>
+                        <td class="text-nowrap">{{ exam.slot_creation_start.strftime("%b %d") }} – {{ exam.slot_creation_end.strftime("%b %d, %Y") }}</td>
+                        <td><span class="badge rounded-pill exam-status-{{ exam.status|lower|replace(' ', '-') }}">{{ exam.status }}</span></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('examiner.exam_slots', exam_id=exam.id) }}">
+                                <i class="bi bi-calendar-week me-1"></i>My slots
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center text-secondary py-5">No exams have been assigned to you yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="admin-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h5 fw-semibold mb-1">Upcoming slots</h2>
+            <p class="small text-secondary mb-0">Your next scheduled sessions.</p>
+        </div>
+        <span class="soft-label"><i class="bi bi-calendar-event me-1"></i>Upcoming</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead><tr><th>Date</th><th>Time</th><th>Exam</th><th>Seats</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for slot in upcoming_slots %}
+                    {% set booked_count = slot.capacity - slot.available_seats %}
+                    <tr>
+                        <td class="fw-medium">{{ slot.date.strftime("%b %d, %Y") }}</td>
+                        <td>{{ slot.start_time.strftime("%H:%M") }}–{{ slot.end_time.strftime("%H:%M") }}</td>
+                        <td>{{ slot.exam.name }}</td>
+                        <td>{{ booked_count }}/{{ slot.capacity }}</td>
+                        <td><span class="badge rounded-pill slot-status-{{ slot.status|lower }}">{{ slot.status }}</span></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('examiner.slot_students', slot_id=slot.id) }}">
+                                <i class="bi bi-people me-1"></i>Students
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center text-secondary py-5">You have no upcoming slots.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

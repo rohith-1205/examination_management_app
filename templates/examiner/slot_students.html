@@ -1,0 +1,33 @@
+{% extends "examiner/layout.html" %}
+
+{% block title %}Slot Students | Examination Management Portal{% endblock %}
+
+{% block examiner_content %}
+<div class="mb-4">
+    <a class="small text-decoration-none" href="{{ url_for('examiner.exam_slots', exam_id=slot.exam_id) }}"><i class="bi bi-arrow-left me-1"></i>Back to my slots</a>
+    <span class="eyebrow d-block mt-3">{{ slot.exam.course.code }} · {{ slot.exam.name }}</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Students in this slot</h1>
+    <p class="text-secondary mb-0">{{ slot.date.strftime("%b %d, %Y") }} · {{ slot.start_time.strftime("%H:%M") }}–{{ slot.end_time.strftime("%H:%M") }} · {{ bookings|length }}/{{ slot.capacity }} booked</p>
+</div>
+
+<section class="admin-panel">
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead><tr><th>Student</th><th>Roll number</th><th>Email</th><th>Booking status</th><th>Evaluation</th></tr></thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr>
+                        <td class="fw-semibold">{{ booking.student.name }}</td>
+                        <td><span class="course-code">{{ booking.student.roll_no or "—" }}</span></td>
+                        <td>{{ booking.student.email }}</td>
+                        <td><span class="badge rounded-pill booking-status-{{ booking.status|lower }}">{{ booking.status }}</span></td>
+                        <td>{% if booking.evaluation %}{{ booking.evaluation.total_marks }} / {{ booking.exam.max_marks }}{% else %}<span class="text-secondary">Pending</span>{% endif %}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-center text-secondary py-5">No students are currently booked in this slot.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
