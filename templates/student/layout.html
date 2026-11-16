@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="student-page py-4">
+    <div class="container">
+        <nav class="student-tabs mb-4" aria-label="Student navigation">
+            <a class="student-tab {% if active_page == 'dashboard' %}active{% endif %}"
+               href="{{ url_for('student.dashboard') }}"><i class="bi bi-grid-1x2 me-1"></i>Dashboard</a>
+            <a class="student-tab {% if active_page == 'exams' %}active{% endif %}"
+               href="{{ url_for('student.exams') }}"><i class="bi bi-journal-check me-1"></i>Exams</a>
+            <a class="student-tab {% if active_page == 'bookings' %}active{% endif %}"
+               href="{{ url_for('student.bookings') }}"><i class="bi bi-ticket-perforated me-1"></i>My Bookings</a>
+            <a class="student-tab {% if active_page == 'schedule' %}active{% endif %}"
+               href="{{ url_for('student.schedule') }}"><i class="bi bi-calendar-week me-1"></i>Schedule</a>
+            <a class="student-tab {% if active_page == 'profile' %}active{% endif %}"
+               href="{{ url_for('student.profile') }}"><i class="bi bi-person-gear me-1"></i>Profile</a>
+        </nav>
+        {% block student_content %}{% endblock %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "student/layout.html" %}
+
+{% block title %}Student Dashboard | Examination Management Portal{% endblock %}
+
+{% block student_content %}
+<div class="mb-4">
+    <span class="eyebrow">Student workspace</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Welcome, {{ current_user.name }}</h1>
+    <p class="text-secondary mb-0">Find an exam, check your schedule, and review published results.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-indigo">
+            <div><span class="stat-label">Available exams</span><strong>{{ stats.available_exams }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-journal-check"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-teal">
+            <div><span class="stat-label">Upcoming booked exams</span><strong>{{ stats.upcoming_bookings }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-calendar-event"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-purple">
+            <div><span class="stat-label">My booked slots</span><strong>{{ stats.my_bookings }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-ticket-perforated"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-orange">
+            <div><span class="stat-label">Published results</span><strong>{{ stats.published_results }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-award"></i></span>
+        </div>
+    </div>
+</div>
+
+<section class="admin-panel mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h5 fw-semibold mb-1">Available exams</h2>
+            <p class="small text-secondary mb-0">Currently open for booking.</p>
+        </div>
+        <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('student.exams', status='Booking Open') }}">Browse exams</a>
+    </div>
+    <div class="row g-3">
+        {% for exam in available_exams[:4] %}
+            <div class="col-md-6 col-xl-3">
+                <a class="student-exam-card" href="{{ url_for('student.exam_detail', exam_id=exam.id) }}">
+                    <span class="course-code">{{ exam.course.code }}</span>
+                    <strong>{{ exam.name }}</strong>
+                    <small>{{ exam.exam_type }} · {{ exam.max_marks }} marks</small>
+                    <span class="student-card-link">Booking closes {{ exam.booking_end.strftime("%b %d") }} <i class="bi bi-arrow-up-right"></i></span>
+                </a>
+            </div>
+        {% else %}
+            <div class="col-12"><p class="text-secondary mb-0">There are no exams open for booking right now.</p></div>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <section class="admin-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div><h2 class="h5 fw-semibold mb-1">Upcoming booked exams</h2><p class="small text-secondary mb-0">Your next scheduled exam slots.</p></div>
+                <a class="small text-decoration-none" href="{{ url_for('student.schedule') }}">Full schedule</a>
+            </div>
+            {% for booking in upcoming_bookings %}
+                <div class="student-list-row">
+                    <span class="student-date-tile"><strong>{{ booking.slot.date.strftime("%d") }}</strong><small>{{ booking.slot.date.strftime("%b") }}</small></span>
+                    <span class="student-row-main"><strong>{{ booking.exam.name }}</strong><small>{{ booking.slot.start_time.strftime("%H:%M") }} · {{ booking.slot.examiner.name }}</small></span>
+                    <span class="badge rounded-pill booking-status-booked">Booked</span>
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">You have no upcoming booked exams.</p>
+            {% endfor %}
+        </section>
+    </div>
+    <div class="col-lg-6">
+        <section class="admin-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div><h2 class="h5 fw-semibold mb-1">My booked slots</h2><p class="small text-secondary mb-0">Recent active bookings.</p></div>
+                <a class="small text-decoration-none" href="{{ url_for('student.bookings') }}">Booking history</a>
+            </div>
+            {% for booking in my_bookings %}
+                <div class="student-list-row">
+                    <span class="quick-action-icon icon-teal"><i class="bi bi-calendar2-check"></i></span>
+                    <span class="student-row-main"><strong>{{ booking.exam.name }}</strong><small>{{ booking.slot.date.strftime("%b %d, %Y") }} · {{ booking.slot.start_time.strftime("%H:%M") }}</small></span>
+                    <span class="small text-secondary">{{ booking.slot.available_seats }}/{{ booking.slot.capacity }} free</span>
+                </div>
+            {% else %}
+                <p class="text-secondary mb-0">You do not have any active bookings.</p>
+            {% endfor %}
+        </section>
+    </div>
+</div>
+
+<section class="admin-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div><h2 class="h5 fw-semibold mb-1">Published results</h2><p class="small text-secondary mb-0">Your evaluated results released by the admin.</p></div>
+        <span class="soft-label">{{ published_results|length }} result{% if published_results|length != 1 %}s{% endif %}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead><tr><th>Exam</th><th>Course</th><th>Examiner</th><th>Marks</th><th>Evaluated</th></tr></thead>
+            <tbody>
+                {% for booking in published_results %}
+                    <tr>
+                        <td>{{ booking.exam.name }}</td>
+                        <td><span class="course-code">{{ booking.exam.course.code }}</span></td>
+                        <td>{{ booking.evaluation.examiner.name }}</td>
+                        <td><strong>{{ booking.evaluation.total_marks }}</strong> / {{ booking.exam.max_marks }}</td>
+                        <td>{{ booking.evaluation.evaluated_at.strftime("%b %d, %Y") }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-center text-secondary py-4">No results have been published for you yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

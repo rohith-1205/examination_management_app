@@ -1,0 +1,56 @@
+{% extends "student/layout.html" %}
+
+{% block title %}My Bookings | Examination Management Portal{% endblock %}
+
+{% block student_content %}
+<div class="mb-4">
+    <span class="eyebrow">Booking history</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">My bookings</h1>
+    <p class="text-secondary mb-0">Your current, cancelled, and completed exam bookings.</p>
+</div>
+
+<section class="admin-panel">
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead><tr><th>Exam</th><th>Slot</th><th>Examiner</th><th>Booked</th><th>Status</th><th>Result</th><th class="text-end">Action</th></tr></thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr>
+                        <td><strong>{{ booking.exam.name }}</strong><small class="d-block text-secondary">{{ booking.exam.course.code }}</small></td>
+                        <td class="text-nowrap">{{ booking.slot.date.strftime("%b %d, %Y") }}<small class="d-block text-secondary">{{ booking.slot.start_time.strftime("%H:%M") }}–{{ booking.slot.end_time.strftime("%H:%M") }}</small></td>
+                        <td>{{ booking.slot.examiner.name }}</td>
+                        <td>{{ booking.booked_at.strftime("%b %d, %Y") }}</td>
+                        <td>
+                            <span class="badge rounded-pill booking-status-{{ booking.status|lower }}">{{ booking.status }}</span>
+                            {% if booking.rescheduled %}<small class="d-block text-secondary mt-1">Rescheduled</small>{% endif %}
+                            {% if booking.cancelled_at %}<small class="d-block text-secondary mt-1">Cancelled {{ booking.cancelled_at.strftime("%b %d, %Y") }}</small>{% endif %}
+                        </td>
+                        <td>
+                            {% if booking.exam.results_published and booking.evaluation %}
+                                <strong>{{ booking.evaluation.total_marks }}</strong> / {{ booking.exam.max_marks }}
+                            {% elif booking.exam.results_published %}
+                                <span class="text-secondary">No result</span>
+                            {% else %}
+                                <span class="text-secondary">Not published</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if booking.status == 'Booked' and not booking.evaluation and today < booking.exam.booking_end %}
+                                <form method="post" action="{{ url_for('student.cancel_booking', booking_id=booking.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="small text-secondary">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7" class="text-center text-secondary py-5">You have no bookings yet. Browse exams to find an open slot.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

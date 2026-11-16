@@ -151,9 +151,15 @@ class Booking(db.Model):
     cancelled_at = db.Column(db.DateTime)
     rescheduled = db.Column(db.Boolean, nullable=False, default=False)
     __table_args__ = (
-        db.UniqueConstraint("student_id", "exam_id", name="uq_booking_student_exam"),
         db.CheckConstraint(
             "status IN ('Booked', 'Cancelled', 'Completed')", name="ck_booking_status"
+        ),
+        db.Index(
+            "uq_active_booking_student_exam",
+            "student_id",
+            "exam_id",
+            unique=True,
+            sqlite_where=db.text("status = 'Booked'"),
         ),
     )
 

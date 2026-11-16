@@ -1,0 +1,74 @@
+{% extends "student/layout.html" %}
+
+{% block title %}Exams | Examination Management Portal{% endblock %}
+
+{% block student_content %}
+<div class="mb-4">
+    <span class="eyebrow">Exam catalogue</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Browse exams</h1>
+    <p class="text-secondary mb-0">Find exam details and available booking slots.</p>
+</div>
+
+<section class="admin-panel mb-4">
+    <form method="get" action="{{ url_for('student.exams') }}" class="row g-3 align-items-end">
+        <div class="col-lg-4">
+            <label for="exam-search" class="form-label small fw-medium">Search</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search text-primary"></i></span>
+                <input class="form-control" type="search" name="search" id="exam-search" value="{{ search }}" placeholder="Exam name or course">
+            </div>
+        </div>
+        <div class="col-sm-4 col-lg-2">
+            <label for="type-filter" class="form-label small fw-medium">Type</label>
+            <select class="form-select" id="type-filter" name="type">
+                <option value="">All types</option>
+                {% for exam_type in exam_types %}<option value="{{ exam_type }}" {% if selected_type == exam_type %}selected{% endif %}>{{ exam_type }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-4 col-lg-3">
+            <label for="course-filter" class="form-label small fw-medium">Course</label>
+            <select class="form-select" id="course-filter" name="course_id">
+                <option value="">All courses</option>
+                {% for course in courses %}<option value="{{ course.id }}" {% if course_filter == course.id %}selected{% endif %}>{{ course.code }} · {{ course.name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-4 col-lg-2">
+            <label for="status-filter" class="form-label small fw-medium">Status</label>
+            <select class="form-select" id="status-filter" name="status">
+                <option value="">All statuses</option>
+                {% for status in exam_statuses %}<option value="{{ status }}" {% if status_filter == status %}selected{% endif %}>{{ status }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-1 d-grid">
+            <button class="btn btn-primary rounded-pill" type="submit" aria-label="Apply filters"><i class="bi bi-funnel"></i></button>
+        </div>
+    </form>
+</section>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 fw-semibold mb-0">Exams</h2>
+    <span class="small text-secondary">{{ exams|length }} result{% if exams|length != 1 %}s{% endif %}</span>
+</div>
+<div class="row g-3">
+    {% for exam in exams %}
+        <div class="col-md-6 col-xl-4">
+            <article class="student-exam-card h-100">
+                <div class="d-flex justify-content-between gap-2">
+                    <span class="course-code">{{ exam.course.code }}</span>
+                    <span class="badge rounded-pill exam-status-{{ exam.status|lower|replace(' ', '-') }}">{{ exam.status }}</span>
+                </div>
+                <h3 class="h5 fw-semibold mt-3">{{ exam.name }}</h3>
+                <p class="small text-secondary mb-3">{{ exam.exam_type }} · {{ exam.duration_minutes }} min · {{ exam.max_marks }} marks</p>
+                <div class="small text-secondary mb-3">
+                    <i class="bi bi-calendar3 me-1"></i>Booking: {{ exam.booking_start.strftime("%b %d") }} – {{ exam.booking_end.strftime("%b %d, %Y") }}
+                </div>
+                <a class="btn btn-outline-primary btn-sm rounded-pill mt-auto" href="{{ url_for('student.exam_detail', exam_id=exam.id) }}">
+                    Exam details <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </article>
+        </div>
+    {% else %}
+        <div class="col-12"><div class="admin-panel text-center text-secondary py-5">No exams match your filters.</div></div>
+    {% endfor %}
+</div>
+{% endblock %}

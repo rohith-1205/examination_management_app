@@ -1,0 +1,63 @@
+{% extends "student/layout.html" %}
+
+{% block title %}My Profile | Examination Management Portal{% endblock %}
+
+{% block student_content %}
+<div class="mb-4">
+    <span class="eyebrow">Account settings</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">My profile</h1>
+    <p class="text-secondary mb-0">Update your contact details or change your password.</p>
+</div>
+
+{% set values = form_values if form_values is defined else none %}
+<div class="row g-4">
+    <div class="col-lg-5">
+        <section class="admin-panel h-100">
+            <div class="profile-summary-icon"><i class="bi bi-mortarboard"></i></div>
+            <span class="eyebrow d-block mt-3">Student account</span>
+            <h2 class="h4 fw-bold mt-2">{{ current_user.name }}</h2>
+            <p class="text-secondary mb-2">{{ current_user.email }}</p>
+            <span class="course-code">{{ current_user.roll_no }}</span>
+            {% if current_user.phone %}<p class="small text-secondary mt-3 mb-0"><i class="bi bi-telephone me-2"></i>{{ current_user.phone }}</p>{% endif %}
+        </section>
+    </div>
+    <div class="col-lg-7">
+        <section class="admin-panel">
+            <form method="post">
+                <h2 class="h5 fw-semibold mb-3">Personal details</h2>
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="name">Name</label>
+                    <input class="form-control" id="name" name="name"
+                           value="{{ values.get('name', '') if values else current_user.name }}" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-medium" for="phone">Phone</label>
+                    <input class="form-control" id="phone" name="phone"
+                           value="{{ values.get('phone', '') if values else (current_user.phone or '') }}">
+                </div>
+
+                <hr class="my-4">
+                <h2 class="h5 fw-semibold mb-1">Change password</h2>
+                <p class="small text-secondary mb-3">Leave these fields blank to keep your current password.</p>
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="old_password">Current password</label>
+                    <input class="form-control" type="password" id="old_password" name="old_password" autocomplete="current-password">
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium" for="new_password">New password</label>
+                        <input class="form-control" type="password" id="new_password" name="new_password" minlength="6" autocomplete="new-password">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium" for="confirm_password">Confirm new password</label>
+                        <input class="form-control" type="password" id="confirm_password" name="confirm_password" minlength="6" autocomplete="new-password">
+                    </div>
+                </div>
+                <button class="btn btn-primary rounded-pill px-4 mt-4" type="submit">
+                    <i class="bi bi-check-lg me-2"></i>Save profile
+                </button>
+            </form>
+        </section>
+    </div>
+</div>
+{% endblock %}
