@@ -4,19 +4,23 @@ from flask import Flask, render_template
 from flask_login import LoginManager
 
 from config import Config
-from models import db
+from models import User, db
 from routes.admin import admin_bp
 from routes.api import api_bp
 from routes.auth import auth_bp
 from routes.examiner import examiner_bp
 from routes.student import student_bp
+from seed import seed_data
 
 login_manager = LoginManager()
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    return None
+    try:
+        return db.session.get(User, int(user_id))
+    except (TypeError, ValueError):
+        return None
 
 
 def create_app():
@@ -40,6 +44,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        seed_data()
 
     return app
 
