@@ -1,0 +1,173 @@
+:root {
+    --color-indigo: #4f46e5;
+    --color-purple: #7c3aed;
+    --color-teal: #0f9f9a;
+    --color-ink: #20233a;
+    --color-muted: #687087;
+    --color-surface: #ffffff;
+    --shadow-soft: 0 14px 40px rgba(37, 39, 82, 0.09);
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--color-ink);
+    background: #f7f8ff;
+    font-family: "Poppins", sans-serif;
+}
+
+main {
+    flex: 1;
+}
+
+.portal-navbar {
+    background: linear-gradient(110deg, var(--color-indigo), var(--color-purple) 58%, var(--color-teal));
+    box-shadow: 0 5px 20px rgba(45, 37, 115, 0.18);
+}
+
+.portal-navbar .navbar-brand {
+    letter-spacing: 0.04em;
+}
+
+.hero-section {
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 85% 20%, rgba(15, 159, 154, 0.12), transparent 28%),
+        radial-gradient(circle at 10% 85%, rgba(124, 58, 237, 0.09), transparent 30%);
+}
+
+.hero-section h1 {
+    max-width: 700px;
+    color: var(--color-ink);
+}
+
+.eyebrow {
+    display: inline-block;
+    color: var(--color-indigo);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.hero-art-card,
+.feature-card {
+    border: 1px solid rgba(79, 70, 229, 0.08);
+    border-radius: 1.4rem;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+}
+
+.hero-art-card {
+    padding: 2.5rem;
+}
+
+.hero-icon,
+.feature-icon {
+    display: grid;
+    place-items: center;
+    border-radius: 1rem;
+    color: #fff;
+}
+
+.hero-icon {
+    width: 76px;
+    height: 76px;
+    background: linear-gradient(135deg, var(--color-indigo), var(--color-teal));
+    font-size: 2rem;
+}
+
+.section-title {
+    font-weight: 700;
+}
+
+.feature-card {
+    padding: 1.8rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 48px rgba(37, 39, 82, 0.14);
+}
+
+.feature-icon {
+    width: 54px;
+    height: 54px;
+    font-size: 1.45rem;
+}
+
+.icon-purple {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+}
+
+.icon-teal {
+    background: linear-gradient(135deg, #2dd4bf, #0f766e);
+}
+
+.icon-indigo {
+    background: linear-gradient(135deg, #818cf8, #4338ca);
+}
+
+.btn-primary {
+    border-color: var(--color-indigo);
+    background-color: var(--color-indigo);
+}
+
+.btn-primary:hover {
+    border-color: #4338ca;
+    background-color: #4338ca;
+}
+
+.btn-outline-primary {
+    border-color: var(--color-indigo);
+    color: var(--color-indigo);
+}
+
+.btn-outline-primary:hover {
+    border-color: var(--color-indigo);
+    background-color: var(--color-indigo);
+}
+
+.portal-footer {
+    background: #fff;
+    color: var(--color-ink);
+    font-size: 0.9rem;
+}
+
+.badge-draft {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
+.badge-open {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.badge-closed {
+    color: #b45309;
+    background: #fef3c7;
+}
+
+.badge-completed {
+    color: #4338ca;
+    background: #e0e7ff;
+}
+
+.badge-booked {
+    color: #0369a1;
+    background: #e0f2fe;
+}
+
+.badge-cancelled {
+    color: #b91c1c;
+    background: #fee2e2;
+}
+
+@media (max-width: 575.98px) {
+    .hero-art-card {
+        padding: 1.75rem;
+    }
+}
