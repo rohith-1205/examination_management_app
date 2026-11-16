@@ -18,9 +18,12 @@ login_manager = LoginManager()
 @login_manager.user_loader
 def load_user(user_id):
     try:
-        return db.session.get(User, int(user_id))
+        user = db.session.get(User, int(user_id))
     except (TypeError, ValueError):
         return None
+    if user is None or (user.role != "admin" and user.status != "active"):
+        return None
+    return user
 
 
 def create_app():

@@ -80,6 +80,7 @@ def exam_slots(exam_id):
     slots = Slot.query.filter_by(
         exam_id=exam.id, examiner_id=current_user.id
     ).order_by(Slot.date.asc(), Slot.start_time.asc()).all()
+    editable_slots = {slot.id: can_modify_slot(slot) for slot in slots}
     can_create, disabled_message = slot_creation_access(exam)
 
     if request.method == "POST":
@@ -95,6 +96,7 @@ def exam_slots(exam_id):
                 "examiner/exam_slots.html",
                 exam=exam,
                 slots=slots,
+                editable_slots=editable_slots,
                 can_create=can_create,
                 disabled_message=disabled_message,
                 form_values=request.form,
@@ -121,6 +123,7 @@ def exam_slots(exam_id):
         "examiner/exam_slots.html",
         exam=exam,
         slots=slots,
+        editable_slots=editable_slots,
         can_create=can_create,
         disabled_message=disabled_message,
         active_page="exams",
@@ -134,9 +137,11 @@ def edit_slot(slot_id):
     if slot.examiner_id != current_user.id:
         abort(403)
 
-    allowed, message = slot_edit_access(slot)
-    if not allowed:
-        flash(message, "warning")
+    if not can_modify_slot(slot):
+        flash(
+            "Slots cannot be edited or deleted after booking starts or when bookings exist.",
+            "warning",
+        )
         return redirect(url_for("examiner.exam_slots", exam_id=slot.exam_id))
 
     if request.method == "POST":
@@ -176,11 +181,11 @@ def delete_slot(slot_id):
     if slot.examiner_id != current_user.id:
         abort(403)
 
-    allowed, message = slot_edit_access(slot)
-    if not allowed:
-        flash(message, "warning")
-    elif slot.bookings:
-        flash("A slot with bookings cannot be deleted.", "danger")
+    if not can_modify_slot(slot):
+        flash(
+            "Slots cannot be edited or deleted after booking starts or when bookings exist.",
+            "warning",
+        )
     else:
         exam_id = slot.exam_id
         db.session.delete(slot)
@@ -365,12 +370,12 @@ def slot_creation_access(exam):
     return True, ""
 
 
-def slot_edit_access(slot):
+def can_modify_slot(slot):
     if slot.exam.status in ("Booking Open", "Closed", "Completed"):
-        return False, "Slots cannot be edited or deleted after booking starts."
-    if slot.bookings:
-        return False, "Slots with bookings cannot be edited or deleted."
-    return True, ""
+        return False
+    if date.today() >= slot.exam.booking_start or slot.bookings:
+        return False
+    return True
 
 
 def validate_slot_form(exam, slot=None):

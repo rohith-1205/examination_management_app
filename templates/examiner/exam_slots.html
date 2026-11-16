@@ -35,7 +35,7 @@
                                 <td><span class="badge rounded-pill slot-status-{{ slot.status|lower }}">{{ slot.status }}</span></td>
                                 <td><a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('examiner.slot_students', slot_id=slot.id) }}"><i class="bi bi-people me-1"></i>View</a></td>
                                 <td class="text-end text-nowrap">
-                                    {% if not slot.bookings and exam.status not in ('Booking Open', 'Closed', 'Completed') %}
+                                    {% if editable_slots[slot.id] %}
                                         <a class="btn btn-sm btn-outline-secondary rounded-pill" href="{{ url_for('examiner.edit_slot', slot_id=slot.id) }}" aria-label="Edit slot"><i class="bi bi-pencil"></i></a>
                                         <form class="d-inline" method="post" action="{{ url_for('examiner.delete_slot', slot_id=slot.id) }}">
                                             <button class="btn btn-sm btn-outline-danger rounded-pill ms-1" type="submit"><i class="bi bi-trash"></i></button>

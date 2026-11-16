@@ -5,7 +5,7 @@ from flask_login import current_user
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
-from models import Booking, Course, Exam, User, db
+from models import Booking, Course, Exam, Slot, User, db
 
 api_bp = Blueprint("api", __name__)
 
@@ -158,14 +158,14 @@ def exam_detail(exam_id):
 
 
 @api_bp.route("/examiners", methods=["GET"])
-@api_login_required
+@api_admin_required
 def examiners():
     examiner_list = User.query.filter_by(role="examiner").order_by(User.name.asc()).all()
     return jsonify([user_data(user) for user in examiner_list]), 200
 
 
 @api_bp.route("/students", methods=["GET"])
-@api_login_required
+@api_admin_required
 def students():
     student_list = User.query.filter_by(role="student").order_by(User.name.asc()).all()
     return jsonify([user_data(user) for user in student_list]), 200
@@ -174,7 +174,17 @@ def students():
 @api_bp.route("/bookings", methods=["GET"])
 @api_login_required
 def bookings():
-    booking_list = Booking.query.order_by(Booking.booked_at.desc()).all()
+    query = Booking.query
+    if current_user.role == "student":
+        query = query.filter_by(student_id=current_user.id)
+    elif current_user.role == "examiner":
+        query = query.join(Slot, Booking.slot_id == Slot.id).filter(
+            Slot.examiner_id == current_user.id
+        )
+    elif current_user.role != "admin":
+        return jsonify({"error": "You do not have permission to access bookings."}), 403
+
+    booking_list = query.order_by(Booking.booked_at.desc()).all()
     return jsonify([booking_data(booking) for booking in booking_list]), 200
 
 
