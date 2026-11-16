@@ -12,7 +12,10 @@
                href="{{ url_for('admin.courses') }}">
                 <i class="bi bi-journal-bookmark me-1"></i>Courses
             </a>
-            <span class="admin-tab admin-tab-disabled"><i class="bi bi-file-earmark-text me-1"></i>Exams</span>
+            <a class="admin-tab {% if active_tab == 'exams' %}active{% endif %}"
+               href="{{ url_for('admin.exams') }}">
+                <i class="bi bi-file-earmark-text me-1"></i>Exams
+            </a>
             <span class="admin-tab admin-tab-disabled"><i class="bi bi-person-workspace me-1"></i>Examiners</span>
             <span class="admin-tab admin-tab-disabled"><i class="bi bi-mortarboard me-1"></i>Students</span>
             <span class="admin-tab admin-tab-disabled"><i class="bi bi-calendar3 me-1"></i>Slots</span>

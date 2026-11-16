@@ -1,0 +1,26 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Delete Exam | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<section class="admin-panel delete-confirm-panel">
+    <div class="delete-confirm-icon"><i class="bi bi-exclamation-triangle"></i></div>
+    <span class="eyebrow mt-3">Exam management</span>
+    <h1 class="h4 fw-bold mt-2">Delete {{ exam.name }}?</h1>
+    {% if exam.bookings %}
+        <p class="text-secondary">This exam has {{ exam.bookings|length }} booking{% if exam.bookings|length != 1 %}s{% endif %} and cannot be deleted.</p>
+    {% else %}
+        <p class="text-secondary">This exam has no bookings and will be permanently deleted.</p>
+    {% endif %}
+    <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+        {% if not exam.bookings %}
+            <form method="post" action="{{ url_for('admin.delete_exam', exam_id=exam.id) }}">
+                <button type="submit" class="btn btn-danger rounded-pill px-4">
+                    <i class="bi bi-trash me-2"></i>Confirm delete
+                </button>
+            </form>
+        {% endif %}
+        <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('admin.exam_detail', exam_id=exam.id) }}">Back to exam</a>
+    </div>
+</section>
+{% endblock %}

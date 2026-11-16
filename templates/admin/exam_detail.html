@@ -1,0 +1,207 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ exam.name }} | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <a class="small text-decoration-none" href="{{ url_for('admin.exams') }}">
+            <i class="bi bi-arrow-left me-1"></i>Back to exams
+        </a>
+        <div class="mt-2">
+            <span class="course-code">{{ exam.course.code }}</span>
+            <span class="badge rounded-pill exam-status-{{ exam.status|lower|replace(' ', '-') }} ms-1">{{ exam.status }}</span>
+            {% if exam.results_published %}<span class="badge rounded-pill course-active ms-1">Results published</span>{% endif %}
+        </div>
+        <h1 class="h2 fw-bold mt-2 mb-1">{{ exam.name }}</h1>
+        <p class="text-secondary mb-0">{{ exam.exam_type }} · {{ exam.duration_minutes }} minutes · {{ exam.max_marks }} marks</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary rounded-pill px-3" href="{{ url_for('admin.edit_exam', exam_id=exam.id) }}">
+            <i class="bi bi-pencil me-1"></i>Edit exam
+        </a>
+        <a class="btn btn-outline-danger rounded-pill px-3" href="{{ url_for('admin.confirm_delete_exam', exam_id=exam.id) }}">
+            <i class="bi bi-trash me-1"></i>Delete
+        </a>
+    </div>
+</div>
+
+<section class="admin-panel mb-4">
+    <div class="d-flex flex-wrap justify-content-between gap-2 mb-4">
+        <div>
+            <h2 class="h5 fw-semibold mb-1">Exam timeline</h2>
+            <p class="text-secondary small mb-0">Slot creation and booking schedule.</p>
+        </div>
+        <span class="soft-label"><i class="bi bi-calendar-range me-1"></i>{{ exam.course.name }}</span>
+    </div>
+    <div class="exam-timeline">
+        {% set timeline = [
+            ('Slot creation opens', exam.slot_creation_start, 1),
+            ('Slot creation closes', exam.slot_creation_end, 2),
+            ('Booking opens', exam.booking_start, 3),
+            ('Booking closes', exam.booking_end, 4)
+        ] %}
+        {% for label, timeline_date, stage in timeline %}
+            <div class="timeline-step {% if timeline_stage >= stage %}timeline-step-done{% endif %}">
+                <span class="timeline-marker"><i class="bi bi-check-lg"></i></span>
+                <span class="timeline-label">{{ label }}</span>
+                <strong>{{ timeline_date.strftime("%b %d, %Y") }}</strong>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="admin-panel mb-4">
+    <div class="mb-3">
+        <h2 class="h5 fw-semibold mb-1">Exam status</h2>
+        <p class="text-secondary small mb-0">Actions are enabled only when the exam is at the right stage.</p>
+    </div>
+    <div class="row g-2">
+        {% set can_open_slots = exam.status == 'Draft' %}
+        {% set can_close_slots = exam.status == 'Slot Creation' %}
+        {% set can_open_booking = exam.status == 'Closed' and exam.booking_start <= today and exam.booking_end >= today %}
+        {% set can_close_booking = exam.status == 'Booking Open' %}
+        {% set can_complete = exam.status == 'Closed' and today > exam.booking_end %}
+        {% set can_publish = exam.status == 'Completed' and not exam.results_published %}
+        {% for action, label, icon, allowed in [
+            ('open_slot_creation', 'Open Slot Creation', 'bi-calendar-plus', can_open_slots),
+            ('close_slot_creation', 'Close Slot Creation', 'bi-calendar-x', can_close_slots),
+            ('open_booking', 'Open Booking', 'bi-door-open', can_open_booking),
+            ('close_booking', 'Close Booking', 'bi-door-closed', can_close_booking),
+            ('mark_completed', 'Mark Completed', 'bi-check2-circle', can_complete),
+            ('publish_results', 'Publish Results', 'bi-megaphone', can_publish)
+        ] %}
+            <div class="col-md-6 col-xl-4">
+                <form method="post" action="{{ url_for('admin.update_exam_status', exam_id=exam.id) }}">
+                    <input type="hidden" name="action" value="{{ action }}">
+                    <button class="status-action {% if allowed %}status-action-ready{% else %}status-action-disabled{% endif %}"
+                            type="submit" {% if not allowed %}disabled{% endif %}>
+                        <i class="bi {{ icon }}"></i>
+                        <span>{{ label }}</span>
+                        {% if not allowed %}<i class="bi bi-lock ms-auto"></i>{% endif %}
+                    </button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <section class="admin-panel h-100">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div>
+                    <h2 class="h5 fw-semibold mb-1">Assigned examiners</h2>
+                    <p class="text-secondary small mb-0">{{ exam.examiner_assignments|length }} assigned</p>
+                </div>
+                {% if active_examiners %}
+                    <form class="d-flex gap-2" method="post" action="{{ url_for('admin.assign_examiner', exam_id=exam.id) }}">
+                        <select class="form-select form-select-sm" name="examiner_id" aria-label="Choose examiner" required>
+                            <option value="">Choose examiner</option>
+                            {% for examiner in active_examiners %}
+                                <option value="{{ examiner.id }}">{{ examiner.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-sm btn-primary rounded-pill text-nowrap" type="submit">
+                            <i class="bi bi-plus-lg me-1"></i>Assign
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            <div class="list-group list-group-flush">
+                {% for assignment in exam.examiner_assignments %}
+                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                        <span>
+                            <strong>{{ assignment.examiner.name }}</strong>
+                            <small class="d-block text-secondary">{{ assignment.examiner.department or assignment.examiner.email }}</small>
+                        </span>
+                        <form method="post" action="{{ url_for('admin.remove_examiner', exam_id=exam.id, assignment_id=assignment.id) }}">
+                            <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit" aria-label="Remove {{ assignment.examiner.name }}">
+                                <i class="bi bi-person-dash"></i>
+                            </button>
+                        </form>
+                    </div>
+                {% else %}
+                    <p class="text-secondary small mb-0">No examiners have been assigned yet.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-6">
+        <section class="admin-panel h-100">
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+                <div>
+                    <h2 class="h5 fw-semibold mb-1">Rubric totals</h2>
+                    <p class="text-secondary small mb-0">Current criteria against the exam limits.</p>
+                </div>
+                <a class="btn btn-sm btn-primary rounded-pill text-nowrap" href="{{ url_for('admin.add_rubric', exam_id=exam.id) }}">
+                    <i class="bi bi-plus-lg me-1"></i>Add criterion
+                </a>
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between small mb-1">
+                    <span>Weightage</span><strong>{{ "%.1f"|format(rubric_weightage_total) }}% / 100%</strong>
+                </div>
+                <div class="progress rubric-progress" role="progressbar" aria-label="Rubric weightage"
+                     aria-valuenow="{{ weightage_progress }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-purple" style="width: {{ weightage_progress }}%"></div>
+                </div>
+            </div>
+            <div>
+                <div class="d-flex justify-content-between small mb-1">
+                    <span>Maximum marks</span><strong>{{ rubric_marks_total }} / {{ exam.max_marks }}</strong>
+                </div>
+                <div class="progress rubric-progress" role="progressbar" aria-label="Rubric maximum marks"
+                     aria-valuenow="{{ marks_progress }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-teal" style="width: {{ marks_progress }}%"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<section class="admin-panel">
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="h5 fw-semibold mb-1">Rubric criteria</h2>
+            <p class="text-secondary small mb-0">Add, edit, or remove the marking criteria.</p>
+        </div>
+        <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('admin.add_rubric', exam_id=exam.id) }}">
+            <i class="bi bi-plus-lg me-1"></i>Add rubric
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead>
+                <tr><th>Criterion</th><th>Description</th><th>Max marks</th><th>Weightage</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for rubric in exam.rubrics %}
+                    <tr>
+                        <td class="fw-medium">{{ rubric.criterion_name }}</td>
+                        <td class="course-description">{{ rubric.description or "—" }}</td>
+                        <td>{{ rubric.max_marks }}</td>
+                        <td>{{ "%.1f"|format(rubric.weightage) }}%</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary rounded-pill"
+                               href="{{ url_for('admin.edit_rubric', exam_id=exam.id, rubric_id=rubric.id) }}" aria-label="Edit {{ rubric.criterion_name }}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form class="d-inline" method="post"
+                                  action="{{ url_for('admin.delete_rubric', exam_id=exam.id, rubric_id=rubric.id) }}">
+                                <button class="btn btn-sm btn-outline-danger rounded-pill ms-1" type="submit"
+                                        aria-label="Delete {{ rubric.criterion_name }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-center text-secondary py-4">No rubric criteria have been added.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

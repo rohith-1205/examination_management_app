@@ -9,8 +9,8 @@
         <h1 class="h2 fw-bold mt-2 mb-1">Admin Dashboard</h1>
         <p class="text-secondary mb-0">A quick view of your examination portal.</p>
     </div>
-    <a class="btn btn-primary rounded-pill px-4" href="{{ url_for('admin.add_course') }}">
-        <i class="bi bi-plus-lg me-2"></i>Add course
+    <a class="btn btn-primary rounded-pill px-4" href="{{ url_for('admin.add_exam') }}">
+        <i class="bi bi-plus-lg me-2"></i>Plan exam
     </a>
 </div>
 
@@ -119,11 +119,11 @@
             </a>
         </div>
         <div class="col-sm-6 col-lg-3">
-            <span class="quick-action quick-action-disabled">
+            <a class="quick-action" href="{{ url_for('admin.add_exam') }}">
                 <span class="quick-action-icon icon-indigo"><i class="bi bi-file-earmark-plus"></i></span>
-                <span><strong>Plan an exam</strong><small>Exam management coming next</small></span>
-                <i class="bi bi-lock ms-auto"></i>
-            </span>
+                <span><strong>Plan an exam</strong><small>Create and schedule an exam</small></span>
+                <i class="bi bi-arrow-up-right ms-auto"></i>
+            </a>
         </div>
         <div class="col-sm-6 col-lg-3">
             <span class="quick-action quick-action-disabled">

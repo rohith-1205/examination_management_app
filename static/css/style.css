@@ -380,6 +380,146 @@ a.quick-action:hover {
     font-size: 1.6rem;
 }
 
+.exam-form-panel {
+    max-width: 900px;
+}
+
+.exam-status-draft {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
+.exam-status-slot-creation {
+    color: #6d28d9;
+    background: #ede9fe;
+}
+
+.exam-status-booking-open {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.exam-status-closed {
+    color: #b45309;
+    background: #fef3c7;
+}
+
+.exam-status-completed {
+    color: #0369a1;
+    background: #e0f2fe;
+}
+
+.exam-timeline {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.timeline-step {
+    position: relative;
+    display: flex;
+    min-height: 120px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding: 1rem;
+    border: 1px solid #e8eaf3;
+    border-radius: 1rem;
+    background: #fafaff;
+}
+
+.timeline-step:not(:last-child)::after {
+    position: absolute;
+    top: 1.45rem;
+    right: -0.85rem;
+    z-index: 1;
+    width: 0.9rem;
+    height: 2px;
+    background: #dfe1ec;
+    content: "";
+}
+
+.timeline-step-done {
+    border-color: rgba(79, 70, 229, 0.2);
+    background: linear-gradient(145deg, #f5f3ff, #f0fdfa);
+}
+
+.timeline-marker {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    margin-bottom: 0.25rem;
+    place-items: center;
+    border-radius: 50%;
+    background: #e6e8f0;
+    color: #9096a8;
+    font-size: 0.8rem;
+}
+
+.timeline-step-done .timeline-marker {
+    background: linear-gradient(135deg, var(--color-indigo), var(--color-teal));
+    color: #fff;
+}
+
+.timeline-label {
+    color: var(--color-muted);
+    font-size: 0.76rem;
+}
+
+.timeline-step strong {
+    font-size: 0.88rem;
+}
+
+.status-action {
+    display: flex;
+    width: 100%;
+    min-height: 48px;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid #e8eaf3;
+    border-radius: 0.8rem;
+    background: #fff;
+    font-size: 0.84rem;
+    font-weight: 500;
+    text-align: left;
+}
+
+.status-action-ready {
+    border-color: rgba(79, 70, 229, 0.2);
+    color: var(--color-indigo);
+    background: #f7f6ff;
+}
+
+.status-action-ready:hover {
+    border-color: var(--color-indigo);
+    background: #f0efff;
+}
+
+.status-action-disabled {
+    color: #9ba1b3;
+    background: #fafaff;
+    cursor: not-allowed;
+}
+
+.rubric-progress {
+    height: 0.55rem;
+    border-radius: 999px;
+    background: #eeeff6;
+}
+
+.rubric-progress .progress-bar {
+    border-radius: 999px;
+}
+
+.bg-purple {
+    background-color: var(--color-purple) !important;
+}
+
+.bg-teal {
+    background-color: var(--color-teal) !important;
+}
+
 .hero-section {
     overflow: hidden;
     background:
@@ -519,5 +659,17 @@ a.quick-action:hover {
 @media (max-width: 575.98px) {
     .hero-art-card {
         padding: 1.75rem;
+    }
+
+    .admin-panel {
+        padding: 1rem;
+    }
+
+    .exam-timeline {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .timeline-step:nth-child(2)::after {
+        display: none;
     }
 }

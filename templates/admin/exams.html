@@ -1,0 +1,122 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Exams | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Exam management</span>
+        <h1 class="h2 fw-bold mt-2 mb-1">Exams</h1>
+        <p class="text-secondary mb-0">Search exams and filter by course or status.</p>
+    </div>
+    <a class="btn btn-primary rounded-pill px-4" href="{{ url_for('admin.add_exam') }}">
+        <i class="bi bi-plus-lg me-2"></i>Add exam
+    </a>
+</div>
+
+<section class="admin-panel">
+    <form method="get" action="{{ url_for('admin.exams') }}" class="row g-3 align-items-end mb-4">
+        <div class="col-lg-4">
+            <label for="exam-search" class="form-label small fw-medium">Search by exam name</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search text-primary"></i></span>
+                <input class="form-control" id="exam-search" type="search" name="search"
+                       value="{{ search }}" placeholder="Exam name">
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <label for="status-filter" class="form-label small fw-medium">Status</label>
+            <select class="form-select" id="status-filter" name="status">
+                <option value="">All statuses</option>
+                {% for status in statuses %}
+                    <option value="{{ status }}" {% if status_filter == status %}selected{% endif %}>{{ status }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <label for="course-filter" class="form-label small fw-medium">Course</label>
+            <select class="form-select" id="course-filter" name="course_id">
+                <option value="">All courses</option>
+                {% for course in courses %}
+                    <option value="{{ course.id }}" {% if course_filter == course.id %}selected{% endif %}>
+                        {{ course.code }} · {{ course.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary rounded-pill flex-grow-1">Filter</button>
+            <a class="btn btn-outline-secondary rounded-pill" href="{{ url_for('admin.exams') }}" aria-label="Clear filters">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+        </div>
+    </form>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 fw-semibold mb-0">Exam list</h2>
+        <span class="small text-secondary">{{ exams|length }} result{% if exams|length != 1 %}s{% endif %}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>Exam</th>
+                    <th>Course</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Slot creation</th>
+                    <th>Booking</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                    <tr>
+                        <td>
+                            <a class="fw-semibold text-decoration-none" href="{{ url_for('admin.exam_detail', exam_id=exam.id) }}">
+                                {{ exam.name }}
+                            </a>
+                            <span class="d-block small text-secondary">{{ exam.duration_minutes }} min · {{ exam.max_marks }} marks</span>
+                        </td>
+                        <td><span class="course-code">{{ exam.course.code }}</span></td>
+                        <td>{{ exam.exam_type }}</td>
+                        <td>
+                            <span class="badge rounded-pill exam-status-{{ exam.status|lower|replace(' ', '-') }}">
+                                {{ exam.status }}
+                            </span>
+                            {% if exam.results_published %}
+                                <span class="badge rounded-pill course-active ms-1">Results published</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-nowrap">
+                            {{ exam.slot_creation_start.strftime("%b %d, %Y") }}<br>
+                            <span class="text-secondary">to {{ exam.slot_creation_end.strftime("%b %d, %Y") }}</span>
+                        </td>
+                        <td class="small text-nowrap">
+                            {{ exam.booking_start.strftime("%b %d, %Y") }}<br>
+                            <span class="text-secondary">to {{ exam.booking_end.strftime("%b %d, %Y") }}</span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary rounded-pill"
+                               href="{{ url_for('admin.exam_detail', exam_id=exam.id) }}">
+                                <i class="bi bi-eye me-1"></i>View
+                            </a>
+                            <a class="btn btn-sm btn-outline-secondary rounded-pill ms-1"
+                               href="{{ url_for('admin.edit_exam', exam_id=exam.id) }}" aria-label="Edit {{ exam.name }}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-secondary py-5">
+                            <i class="bi bi-file-earmark-x d-block fs-3 mb-2"></i>
+                            No exams match these filters.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
