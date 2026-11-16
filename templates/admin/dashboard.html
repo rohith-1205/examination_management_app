@@ -1,0 +1,137 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Admin Dashboard | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Overview</span>
+        <h1 class="h2 fw-bold mt-2 mb-1">Admin Dashboard</h1>
+        <p class="text-secondary mb-0">A quick view of your examination portal.</p>
+    </div>
+    <a class="btn btn-primary rounded-pill px-4" href="{{ url_for('admin.add_course') }}">
+        <i class="bi bi-plus-lg me-2"></i>Add course
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-indigo">
+            <div><span class="stat-label">Total courses</span><strong>{{ stats.courses }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-journal-bookmark"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-purple">
+            <div><span class="stat-label">Total exams</span><strong>{{ stats.exams }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-file-earmark-text"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-teal">
+            <div><span class="stat-label">Total examiners</span><strong>{{ stats.examiners }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-person-workspace"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-blue">
+            <div><span class="stat-label">Total students</span><strong>{{ stats.students }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-mortarboard"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-orange">
+            <div><span class="stat-label">Total slots</span><strong>{{ stats.slots }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-calendar3"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-pink">
+            <div><span class="stat-label">Total bookings</span><strong>{{ stats.bookings }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-ticket-perforated"></i></span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="admin-stat stat-green">
+            <div><span class="stat-label">Pending examiner approvals</span><strong>{{ stats.pending_examiners }}</strong></div>
+            <span class="stat-icon"><i class="bi bi-person-check"></i></span>
+        </div>
+    </div>
+</div>
+
+<section class="admin-panel mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="h5 fw-semibold mb-1">Recent bookings</h2>
+            <p class="text-secondary small mb-0">The five latest student bookings.</p>
+        </div>
+        <span class="soft-label"><i class="bi bi-clock-history me-1"></i>Latest activity</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Exam</th>
+                    <th>Slot</th>
+                    <th>Booked</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in recent_bookings %}
+                    <tr>
+                        <td>
+                            <span class="fw-medium">{{ booking.student.name }}</span>
+                            <span class="d-block small text-secondary">{{ booking.student.roll_no or booking.student.email }}</span>
+                        </td>
+                        <td>{{ booking.exam.name }}</td>
+                        <td>{{ booking.slot.date.strftime("%b %d, %Y") }} · {{ booking.slot.start_time.strftime("%H:%M") }}</td>
+                        <td>{{ booking.booked_at.strftime("%b %d, %Y") }}</td>
+                        <td><span class="badge rounded-pill booking-status-{{ booking.status|lower }}">{{ booking.status }}</span></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-center text-secondary py-4">No bookings yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="admin-panel">
+    <div class="mb-3">
+        <h2 class="h5 fw-semibold mb-1">Quick actions</h2>
+        <p class="text-secondary small mb-0">Jump straight to common admin tasks.</p>
+    </div>
+    <div class="row g-3">
+        <div class="col-sm-6 col-lg-3">
+            <a class="quick-action" href="{{ url_for('admin.add_course') }}">
+                <span class="quick-action-icon icon-purple"><i class="bi bi-plus-circle"></i></span>
+                <span><strong>Add a course</strong><small>Create a course record</small></span>
+                <i class="bi bi-arrow-up-right ms-auto"></i>
+            </a>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <a class="quick-action" href="{{ url_for('admin.courses') }}">
+                <span class="quick-action-icon icon-teal"><i class="bi bi-journal-check"></i></span>
+                <span><strong>Manage courses</strong><small>Search and update courses</small></span>
+                <i class="bi bi-arrow-up-right ms-auto"></i>
+            </a>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <span class="quick-action quick-action-disabled">
+                <span class="quick-action-icon icon-indigo"><i class="bi bi-file-earmark-plus"></i></span>
+                <span><strong>Plan an exam</strong><small>Exam management coming next</small></span>
+                <i class="bi bi-lock ms-auto"></i>
+            </span>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <span class="quick-action quick-action-disabled">
+                <span class="quick-action-icon icon-orange"><i class="bi bi-person-check"></i></span>
+                <span><strong>Review approvals</strong><small>Examiner management coming next</small></span>
+                <i class="bi bi-lock ms-auto"></i>
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}

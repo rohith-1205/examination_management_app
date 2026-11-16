@@ -1,0 +1,32 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Delete Course | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <span class="eyebrow">Course management</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Confirm course deletion</h1>
+    <p class="text-secondary mb-0">Review this action before continuing.</p>
+</div>
+
+<section class="admin-panel delete-confirm-panel">
+    <div class="delete-confirm-icon"><i class="bi bi-exclamation-triangle"></i></div>
+    <h2 class="h5 fw-semibold mt-3">{{ course.code }} · {{ course.name }}</h2>
+    {% if course.exams %}
+        <p class="text-secondary">
+            This course has {{ course.exams|length }} exam{% if course.exams|length != 1 %}s{% endif %}.
+            It will be set to <strong>Inactive</strong> instead of being deleted.
+        </p>
+    {% else %}
+        <p class="text-secondary">This course has no exams and will be permanently deleted.</p>
+    {% endif %}
+    <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+        <form method="post" action="{{ url_for('admin.delete_course', course_id=course.id) }}">
+            <button type="submit" class="btn btn-danger rounded-pill px-4">
+                <i class="bi bi-trash me-2"></i>Confirm
+            </button>
+        </form>
+        <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('admin.courses') }}">Cancel</a>
+    </div>
+</section>
+{% endblock %}

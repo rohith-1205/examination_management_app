@@ -1,0 +1,51 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_title }} | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <span class="eyebrow">Course management</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">{{ page_title }}</h1>
+    <p class="text-secondary mb-0">Enter the course details below.</p>
+</div>
+
+{% set values = form_values if form_values is defined else none %}
+{% set code_value = values.get('code', '') if values else (course.code if course else '') %}
+{% set name_value = values.get('name', '') if values else (course.name if course else '') %}
+{% set description_value = values.get('description', '') if values else (course.description if course else '') %}
+<section class="admin-panel course-form-panel">
+    <form method="post">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="code" class="form-label fw-medium">Course code</label>
+                <input class="form-control" id="code" name="code" maxlength="20"
+                       value="{{ code_value }}" required>
+                <div class="form-text">Codes are saved in uppercase.</div>
+            </div>
+            <div class="col-md-6">
+                <label for="name" class="form-label fw-medium">Course name</label>
+                <input class="form-control" id="name" name="name" maxlength="100"
+                       value="{{ name_value }}" required>
+            </div>
+            <div class="col-12">
+                <label for="description" class="form-label fw-medium">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="4">{{ description_value or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label for="status" class="form-label fw-medium">Status</label>
+                {% set selected_status = values.get('status', '') if values else (course.status if course else 'Active') %}
+                <select class="form-select" id="status" name="status" required>
+                    <option value="Active" {% if selected_status == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="Inactive" {% if selected_status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-check-lg me-2"></i>Save course
+            </button>
+            <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('admin.courses') }}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

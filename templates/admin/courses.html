@@ -1,0 +1,86 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Courses | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Course management</span>
+        <h1 class="h2 fw-bold mt-2 mb-1">Courses</h1>
+        <p class="text-secondary mb-0">Search, update, and manage course records.</p>
+    </div>
+    <a class="btn btn-primary rounded-pill px-4" href="{{ url_for('admin.add_course') }}">
+        <i class="bi bi-plus-lg me-2"></i>Add course
+    </a>
+</div>
+
+<section class="admin-panel">
+    <form method="get" action="{{ url_for('admin.courses') }}" class="row g-2 align-items-center mb-4">
+        <div class="col-sm">
+            <label for="course-search" class="visually-hidden">Search by course name or code</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search text-primary"></i></span>
+                <input class="form-control" id="course-search" type="search" name="search"
+                       value="{{ search }}" placeholder="Search by course name or code">
+            </div>
+        </div>
+        <div class="col-sm-auto d-flex gap-2">
+            <button type="submit" class="btn btn-primary rounded-pill px-4">Search</button>
+            {% if search %}
+                <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('admin.courses') }}">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 fw-semibold mb-0">Course list</h2>
+        <span class="small text-secondary">{{ courses|length }} result{% if courses|length != 1 %}s{% endif %}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Course name</th>
+                    <th>Description</th>
+                    <th>Exams</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                    <tr>
+                        <td><span class="course-code">{{ course.code }}</span></td>
+                        <td class="fw-medium">{{ course.name }}</td>
+                        <td class="course-description">{{ course.description or "—" }}</td>
+                        <td>{{ course.exams|length }}</td>
+                        <td>
+                            <span class="badge rounded-pill {% if course.status == 'Active' %}course-active{% else %}course-inactive{% endif %}">
+                                {{ course.status }}
+                            </span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary rounded-pill"
+                               href="{{ url_for('admin.edit_course', course_id=course.id) }}">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </a>
+                            <a class="btn btn-sm btn-outline-danger rounded-pill ms-1"
+                               href="{{ url_for('admin.confirm_delete_course', course_id=course.id) }}">
+                                <i class="bi bi-trash me-1"></i>Delete
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-secondary py-5">
+                            <i class="bi bi-journal-x d-block fs-3 mb-2"></i>
+                            No courses found. Try another search or add a course.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
