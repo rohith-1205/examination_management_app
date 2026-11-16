@@ -1,0 +1,100 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Portal Statistics | Examination Management Portal{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <span class="eyebrow">Admin analytics</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Portal statistics</h1>
+    <p class="text-secondary mb-0">A visual summary of bookings, examiner workload, and exam progress.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <section class="admin-panel h-100">
+            <h2 class="h5 fw-semibold mb-1">Bookings per exam</h2>
+            <p class="small text-secondary mb-3">Includes active and historical bookings.</p>
+            <div class="stats-chart-wrap">
+                <canvas id="bookingsChart" aria-label="Bookings per exam bar chart"></canvas>
+            </div>
+        </section>
+    </div>
+    <div class="col-lg-6">
+        <section class="admin-panel h-100">
+            <h2 class="h5 fw-semibold mb-1">Examiner workload</h2>
+            <p class="small text-secondary mb-3">Number of slots assigned to each examiner.</p>
+            <div class="stats-chart-wrap">
+                <canvas id="workloadChart" aria-label="Examiner workload bar chart"></canvas>
+            </div>
+        </section>
+    </div>
+    <div class="col-lg-6">
+        <section class="admin-panel h-100">
+            <h2 class="h5 fw-semibold mb-1">Exam completion status</h2>
+            <p class="small text-secondary mb-3">Exams grouped by their current status.</p>
+            <div class="stats-chart-wrap stats-chart-doughnut">
+                <canvas id="statusChart" aria-label="Exam status doughnut chart"></canvas>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+    const bookingLabels = {{ booking_labels|tojson }};
+    const bookingCounts = {{ booking_counts|tojson }};
+    const examinerLabels = {{ examiner_labels|tojson }};
+    const examinerSlotCounts = {{ examiner_slot_counts|tojson }};
+    const statusLabels = {{ status_labels|tojson }};
+    const statusCounts = {{ status_counts|tojson }};
+
+    new Chart(document.getElementById("bookingsChart"), {
+        type: "bar",
+        data: {
+            labels: bookingLabels,
+            datasets: [{
+                label: "Bookings",
+                data: bookingCounts,
+                backgroundColor: "#6366f1",
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+
+    new Chart(document.getElementById("workloadChart"), {
+        type: "bar",
+        data: {
+            labels: examinerLabels,
+            datasets: [{
+                label: "Slots",
+                data: examinerSlotCounts,
+                backgroundColor: "#14b8a6",
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+
+    new Chart(document.getElementById("statusChart"), {
+        type: "doughnut",
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusCounts,
+                backgroundColor: ["#94a3b8", "#8b5cf6", "#14b8a6", "#f59e0b", "#3b82f6"],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+</script>
+{% endblock %}

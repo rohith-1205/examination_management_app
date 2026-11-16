@@ -60,7 +60,12 @@
                         </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="8" class="text-center text-secondary py-5">No bookings match this search.</td></tr>
+                    <tr>
+                        <td colspan="8" class="text-center text-secondary py-5">
+                            <i class="bi bi-ticket-perforated d-block fs-3 mb-2 text-primary"></i>
+                            No bookings match this search.
+                        </td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>

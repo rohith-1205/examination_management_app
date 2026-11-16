@@ -1046,6 +1046,39 @@ a.quick-action:hover {
     font-size: 1.2rem;
 }
 
+.error-card {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 2.5rem;
+}
+
+.error-icon {
+    display: grid;
+    width: 68px;
+    height: 68px;
+    margin: 0 auto;
+    place-items: center;
+    border-radius: 1.2rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--color-indigo), var(--color-purple), var(--color-teal));
+    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.22);
+    font-size: 1.8rem;
+}
+
+.error-icon-warning {
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+}
+
+.stats-chart-wrap {
+    position: relative;
+    height: 300px;
+}
+
+.stats-chart-doughnut {
+    max-width: 380px;
+    margin: 0 auto;
+}
+
 @media print {
     body {
         display: block;

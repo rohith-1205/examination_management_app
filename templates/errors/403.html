@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Access denied | Examination Management Portal{% endblock %}
+
+{% block content %}
+<section class="error-page py-5">
+    <div class="container">
+        <div class="admin-panel error-card text-center">
+            <span class="error-icon error-icon-warning"><i class="bi bi-shield-lock"></i></span>
+            <span class="eyebrow mt-3">403 · Access denied</span>
+            <h1 class="h2 fw-bold mt-2">You cannot access this page</h1>
+            <p class="text-secondary">Your account does not have permission to view this resource.</p>
+            {% if current_user.is_authenticated %}
+                <a class="btn btn-primary rounded-pill px-4" href="{{ url_for(current_user.role ~ '.dashboard') }}">Go to dashboard</a>
+            {% else %}
+                <a class="btn btn-primary rounded-pill px-4" href="{{ url_for('auth.login') }}">Log in</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

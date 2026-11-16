@@ -47,6 +47,43 @@ def dashboard():
     )
 
 
+@admin_bp.route("/stats")
+@role_required("admin")
+def stats():
+    bookings_by_exam = (
+        db.session.query(Exam.name, func.count(Booking.id))
+        .outerjoin(Booking, Booking.exam_id == Exam.id)
+        .group_by(Exam.id, Exam.name)
+        .order_by(Exam.name.asc())
+        .all()
+    )
+    slots_by_examiner = (
+        db.session.query(User.name, func.count(Slot.id))
+        .outerjoin(Slot, Slot.examiner_id == User.id)
+        .filter(User.role == "examiner")
+        .group_by(User.id, User.name)
+        .order_by(User.name.asc())
+        .all()
+    )
+    exam_statuses = dict(
+        db.session.query(Exam.status, func.count(Exam.id))
+        .group_by(Exam.status)
+        .all()
+    )
+    status_labels = ("Draft", "Slot Creation", "Booking Open", "Closed", "Completed")
+
+    return render_template(
+        "admin/stats.html",
+        booking_labels=[row[0] for row in bookings_by_exam],
+        booking_counts=[row[1] for row in bookings_by_exam],
+        examiner_labels=[row[0] for row in slots_by_examiner],
+        examiner_slot_counts=[row[1] for row in slots_by_examiner],
+        status_labels=list(status_labels),
+        status_counts=[exam_statuses.get(status, 0) for status in status_labels],
+        active_tab="stats",
+    )
+
+
 @admin_bp.route("/examiners")
 @role_required("admin")
 def examiners():

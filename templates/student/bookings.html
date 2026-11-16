@@ -47,7 +47,12 @@
                         </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="7" class="text-center text-secondary py-5">You have no bookings yet. Browse exams to find an open slot.</td></tr>
+                    <tr>
+                        <td colspan="7" class="text-center text-secondary py-5">
+                            <i class="bi bi-ticket-perforated d-block fs-3 mb-2 text-primary"></i>
+                            You have no bookings yet. Browse exams to find an open slot.
+                        </td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>

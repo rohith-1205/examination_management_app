@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template
+from flask import Flask, jsonify, render_template, request
 from flask_login import LoginManager
 
 from config import Config
@@ -41,6 +41,18 @@ def create_app():
     @app.route("/")
     def index():
         return render_template("index.html")
+
+    @app.errorhandler(403)
+    def forbidden(error):
+        if request.path.startswith("/api/"):
+            return jsonify({"error": "You do not have permission to access this resource."}), 403
+        return render_template("errors/403.html"), 403
+
+    @app.errorhandler(404)
+    def not_found(error):
+        if request.path.startswith("/api/"):
+            return jsonify({"error": "API endpoint or resource not found."}), 404
+        return render_template("errors/404.html"), 404
 
     with app.app_context():
         db.create_all()
