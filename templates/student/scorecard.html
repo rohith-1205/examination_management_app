@@ -1,0 +1,69 @@
+{% extends "student/layout.html" %}
+
+{% block title %}Scorecard | Examination Management Portal{% endblock %}
+
+{% block student_content %}
+<div class="d-flex justify-content-between align-items-center gap-2 mb-4 scorecard-actions">
+    <a class="small text-decoration-none" href="{{ url_for('student.results') }}">
+        <i class="bi bi-arrow-left me-1"></i>Back to results
+    </a>
+    <a class="btn btn-sm btn-primary rounded-pill" href="{{ url_for('student.download_scorecard', booking_id=booking.id) }}">
+        <i class="bi bi-download me-1"></i>Download CSV
+    </a>
+</div>
+
+<article class="scorecard">
+    <header class="scorecard-header">
+        <div class="scorecard-brand"><i class="bi bi-journal-check me-2"></i>EMP · Examination Management Portal</div>
+        <span class="badge rounded-pill course-active">Official scorecard</span>
+        <h1 class="h2 fw-bold mt-3 mb-1">{{ booking.exam.name }}</h1>
+        <p class="mb-0">{{ booking.exam.course.code }} · {{ booking.exam.course.name }} · {{ booking.exam.exam_type }}</p>
+    </header>
+
+    <section class="scorecard-details">
+        <div><span>Student</span><strong>{{ booking.student.name }}</strong></div>
+        <div><span>Roll number</span><strong>{{ booking.student.roll_no or "—" }}</strong></div>
+        <div><span>Email</span><strong>{{ booking.student.email }}</strong></div>
+        <div><span>Exam date</span><strong>{{ booking.slot.date.strftime("%b %d, %Y") }}</strong></div>
+        <div><span>Examiner</span><strong>{{ booking.evaluation.examiner.name }}</strong></div>
+        <div><span>Evaluated</span><strong>{{ booking.evaluation.evaluated_at.strftime("%b %d, %Y") }}</strong></div>
+    </section>
+
+    <section class="mt-4">
+        <h2 class="h5 fw-semibold mb-3">Criterion scores</h2>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead><tr><th>Criterion</th><th>Maximum</th><th>Marks</th><th>Progress</th></tr></thead>
+                <tbody>
+                    {% for score in scores %}
+                        {% set percent = (score.marks / score.rubric.max_marks * 100) if score.rubric.max_marks else 0 %}
+                        <tr>
+                            <td class="fw-medium">{{ score.rubric.criterion_name }}</td>
+                            <td>{{ score.rubric.max_marks }}</td>
+                            <td><strong>{{ score.marks }}</strong></td>
+                            <td class="scorecard-progress">
+                                <div class="progress result-progress" role="progressbar" aria-label="{{ score.rubric.criterion_name }} score"
+                                     aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-bar bg-teal" style="width: {{ percent }}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="text-center text-secondary py-4">No criterion scores are available.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="scorecard-total">
+        <div><span>Total marks</span><strong>{{ booking.evaluation.total_marks }} / {{ booking.exam.max_marks }}</strong></div>
+        <div><span>Percentage</span><strong>{{ "%.2f"|format(percentage) }}%</strong></div>
+    </section>
+
+    <section class="result-remarks mt-4">
+        <strong class="small d-block mb-1">Examiner remarks</strong>
+        <p class="mb-0">{{ booking.evaluation.remarks or "No additional remarks." }}</p>
+    </section>
+</article>
+{% endblock %}

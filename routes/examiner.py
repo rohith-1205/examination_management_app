@@ -1,10 +1,20 @@
-from datetime import date, time
+from datetime import date, datetime, time
+from math import isfinite
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import func
 
-from models import Booking, Exam, ExamExaminer, Slot, db
+from models import (
+    Booking,
+    Evaluation,
+    Exam,
+    ExamExaminer,
+    Rubric,
+    RubricScore,
+    Slot,
+    db,
+)
 from utils import role_required, update_slot_status
 
 examiner_bp = Blueprint("examiner", __name__)
@@ -34,6 +44,7 @@ def dashboard():
         Booking.query.join(Slot, Booking.slot_id == Slot.id)
         .filter(
             Slot.examiner_id == current_user.id,
+            Slot.date <= date.today(),
             Booking.status == "Booked",
             ~Booking.evaluation.has(),
         )
@@ -196,6 +207,142 @@ def slot_students(slot_id):
         slot=slot,
         bookings=bookings,
         active_page="exams",
+    )
+
+
+@examiner_bp.route("/evaluations")
+@role_required("examiner")
+def evaluations():
+    pending = (
+        Booking.query.join(Slot, Booking.slot_id == Slot.id)
+        .filter(
+            Slot.examiner_id == current_user.id,
+            Slot.date <= date.today(),
+            Booking.status == "Booked",
+            ~Booking.evaluation.has(),
+        )
+        .order_by(Slot.date.asc(), Slot.start_time.asc())
+        .all()
+    )
+    evaluated = (
+        Booking.query.join(Slot, Booking.slot_id == Slot.id)
+        .join(Evaluation, Evaluation.booking_id == Booking.id)
+        .filter(
+            Slot.examiner_id == current_user.id,
+        )
+        .order_by(Evaluation.evaluated_at.desc())
+        .all()
+    )
+    return render_template(
+        "examiner/evaluations.html",
+        pending=pending,
+        evaluated=evaluated,
+        active_page="evaluations",
+    )
+
+
+@examiner_bp.route("/evaluate/<int:booking_id>", methods=["GET", "POST"])
+@role_required("examiner")
+def evaluate(booking_id):
+    booking = db.get_or_404(Booking, booking_id)
+    if booking.slot.examiner_id != current_user.id:
+        abort(403)
+
+    evaluation = booking.evaluation
+    if evaluation and booking.exam.results_published:
+        flash("Published results can no longer be changed.", "warning")
+        return redirect(url_for("examiner.evaluations"))
+    if evaluation is None and booking.status != "Booked":
+        flash("Only active bookings can be evaluated.", "warning")
+        return redirect(url_for("examiner.evaluations"))
+    if evaluation is None and booking.slot.date > date.today():
+        flash("This booking can only be evaluated on or after its slot date.", "warning")
+        return redirect(url_for("examiner.evaluations"))
+
+    rubrics = Rubric.query.filter_by(exam_id=booking.exam_id).order_by(Rubric.id.asc()).all()
+    existing_scores = {}
+    if evaluation:
+        existing_scores = {
+            score.rubric_id: score.marks for score in evaluation.rubric_scores
+        }
+    form_values = {
+        f"rubric_{rubric.id}": existing_scores.get(rubric.id, "")
+        for rubric in rubrics
+    }
+
+    if request.method == "POST":
+        errors = []
+        scores = []
+        for rubric in rubrics:
+            value = request.form.get(f"rubric_{rubric.id}", "").strip()
+            try:
+                marks = float(value)
+            except ValueError:
+                errors.append(f"Enter valid marks for {rubric.criterion_name}.")
+                continue
+            if not isfinite(marks) or marks < 0 or marks > rubric.max_marks:
+                errors.append(
+                    f"Marks for {rubric.criterion_name} must be between 0 and {rubric.max_marks}."
+                )
+                continue
+            scores.append((rubric, marks))
+
+        if not rubrics:
+            errors.append("Add rubric criteria to this exam before evaluating students.")
+
+        if errors:
+            for error in errors:
+                flash(error, "danger")
+            return render_template(
+                "examiner/evaluate.html",
+                booking=booking,
+                rubrics=rubrics,
+                evaluation=evaluation,
+                form_values=request.form,
+                active_page="evaluations",
+            ), 400
+
+        if evaluation is None:
+            evaluation = Evaluation(
+                booking=booking,
+                examiner_id=current_user.id,
+                total_marks=sum(marks for _, marks in scores),
+            )
+            db.session.add(evaluation)
+        else:
+            evaluation.rubric_scores.clear()
+
+        evaluation.examiner_id = current_user.id
+        evaluation.total_marks = sum(marks for _, marks in scores)
+        evaluation.remarks = request.form.get("remarks", "").strip() or None
+        evaluation.evaluated_at = datetime.utcnow()
+        evaluation.rubric_scores.extend(
+            RubricScore(rubric=rubric, marks=marks)
+            for rubric, marks in scores
+        )
+        booking.status = "Completed"
+
+        slot = booking.slot
+        active_bookings = [
+            item for item in slot.bookings
+            if item.status in ("Booked", "Completed")
+        ]
+        if active_bookings and all(
+            item.status == "Completed" for item in active_bookings
+        ):
+            slot.status = "Completed"
+
+        db.session.commit()
+        flash("Evaluation saved successfully.", "success")
+        return redirect(url_for("examiner.evaluations"))
+
+    return render_template(
+        "examiner/evaluate.html",
+        booking=booking,
+        rubrics=rubrics,
+        evaluation=evaluation,
+        form_values=form_values,
+        active_page="evaluations",
     )
 
 

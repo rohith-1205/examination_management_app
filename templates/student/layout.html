@@ -10,6 +10,8 @@
                href="{{ url_for('student.exams') }}"><i class="bi bi-journal-check me-1"></i>Exams</a>
             <a class="student-tab {% if active_page == 'bookings' %}active{% endif %}"
                href="{{ url_for('student.bookings') }}"><i class="bi bi-ticket-perforated me-1"></i>My Bookings</a>
+            <a class="student-tab {% if active_page == 'results' %}active{% endif %}"
+               href="{{ url_for('student.results') }}"><i class="bi bi-award me-1"></i>Results</a>
             <a class="student-tab {% if active_page == 'schedule' %}active{% endif %}"
                href="{{ url_for('student.schedule') }}"><i class="bi bi-calendar-week me-1"></i>Schedule</a>
             <a class="student-tab {% if active_page == 'profile' %}active{% endif %}"

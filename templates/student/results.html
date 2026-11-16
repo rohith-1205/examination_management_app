@@ -1,0 +1,63 @@
+{% extends "student/layout.html" %}
+
+{% block title %}My Results | Examination Management Portal{% endblock %}
+
+{% block student_content %}
+<div class="mb-4">
+    <span class="eyebrow">Student workspace</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">My results</h1>
+    <p class="text-secondary mb-0">Only results released by the administrator appear here.</p>
+</div>
+
+{% for booking in bookings %}
+    {% set evaluation = booking.evaluation %}
+    <section class="admin-panel mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <span class="course-code">{{ booking.exam.course.code }}</span>
+                <h2 class="h4 fw-semibold mt-2 mb-1">{{ booking.exam.name }}</h2>
+                <p class="text-secondary mb-0">Examiner: {{ evaluation.examiner.name }} · Evaluated {{ evaluation.evaluated_at.strftime("%b %d, %Y") }}</p>
+            </div>
+            <div class="text-md-end">
+                <div class="result-total">{{ evaluation.total_marks }} <span>/ {{ booking.exam.max_marks }}</span></div>
+                <div class="small text-secondary">{{ "%.1f"|format(evaluation.total_marks / booking.exam.max_marks * 100) }}%</div>
+            </div>
+        </div>
+        <h3 class="h6 fw-semibold mb-3">Criterion scores</h3>
+        {% for score in evaluation.rubric_scores|sort(attribute="rubric.id") %}
+            {% set percent = (score.marks / score.rubric.max_marks * 100) if score.rubric.max_marks else 0 %}
+            <div class="result-criterion mb-3">
+                <div class="d-flex justify-content-between gap-2 small mb-1">
+                    <span class="fw-medium">{{ score.rubric.criterion_name }}</span>
+                    <strong>{{ score.marks }} / {{ score.rubric.max_marks }}</strong>
+                </div>
+                <div class="progress result-progress" role="progressbar" aria-label="{{ score.rubric.criterion_name }} score"
+                     aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar {% if loop.index0 % 3 == 0 %}bg-indigo{% elif loop.index0 % 3 == 1 %}bg-purple{% else %}bg-teal{% endif %}"
+                         style="width: {{ percent }}%"></div>
+                </div>
+            </div>
+        {% else %}
+            <p class="small text-secondary">No criterion scores are available.</p>
+        {% endfor %}
+        <div class="result-remarks mt-4">
+            <strong class="small d-block mb-1">Examiner remarks</strong>
+            <p class="mb-0">{{ evaluation.remarks or "No additional remarks." }}</p>
+        </div>
+        <div class="text-end mt-3">
+            <a class="btn btn-sm btn-outline-primary rounded-pill me-2" href="{{ url_for('student.scorecard', booking_id=booking.id) }}">
+                <i class="bi bi-card-text me-1"></i>View scorecard
+            </a>
+            <a class="btn btn-sm btn-primary rounded-pill" href="{{ url_for('student.download_scorecard', booking_id=booking.id) }}">
+                <i class="bi bi-download me-1"></i>Download CSV
+            </a>
+        </div>
+    </section>
+{% else %}
+    <section class="admin-panel text-center py-5">
+        <span class="quick-action-icon icon-teal mx-auto mb-3"><i class="bi bi-award"></i></span>
+        <h2 class="h5 fw-semibold">No published results yet</h2>
+        <p class="text-secondary mb-0">Your results will appear here after they have been evaluated and released.</p>
+    </section>
+{% endfor %}
+{% endblock %}

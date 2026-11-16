@@ -1,6 +1,17 @@
+import csv
 from datetime import date, datetime
+from io import StringIO
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    Response,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user
 from sqlalchemy import or_, update
 from sqlalchemy.exc import IntegrityError
@@ -203,6 +214,98 @@ def bookings():
         today=date.today(),
         active_page="bookings",
     )
+
+
+@student_bp.route("/results")
+@role_required("student")
+def results():
+    published_results = (
+        Booking.query.join(Exam, Booking.exam_id == Exam.id)
+        .filter(
+            Booking.student_id == current_user.id,
+            Exam.results_published.is_(True),
+            Booking.evaluation.has(),
+        )
+        .order_by(Booking.booked_at.desc())
+        .all()
+    )
+    return render_template(
+        "student/results.html",
+        bookings=published_results,
+        active_page="results",
+    )
+
+
+@student_bp.route("/results/<int:booking_id>/scorecard")
+@role_required("student")
+def scorecard(booking_id):
+    booking = get_published_booking(booking_id)
+    if booking is None:
+        abort(404)
+    scores = sorted(
+        booking.evaluation.rubric_scores, key=lambda score: score.rubric.id
+    )
+    return render_template(
+        "student/scorecard.html",
+        booking=booking,
+        scores=scores,
+        percentage=booking.evaluation.total_marks / booking.exam.max_marks * 100,
+        active_page="results",
+    )
+
+
+@student_bp.route("/results/<int:booking_id>/download")
+@role_required("student")
+def download_scorecard(booking_id):
+    booking = get_published_booking(booking_id)
+    if booking is None:
+        abort(404)
+
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Examination Management Portal - Scorecard"])
+    writer.writerow(["Student", booking.student.name])
+    writer.writerow(["Email", booking.student.email])
+    writer.writerow(["Roll number", booking.student.roll_no or ""])
+    writer.writerow(
+        ["Course", f"{booking.exam.course.code} - {booking.exam.course.name}"]
+    )
+    writer.writerow(["Exam", booking.exam.name])
+    writer.writerow(["Examiner", booking.evaluation.examiner.name])
+    writer.writerow(["Exam date", booking.slot.date.isoformat()])
+    writer.writerow([])
+    writer.writerow(["Criterion", "Marks", "Maximum marks"])
+    for score in sorted(
+        booking.evaluation.rubric_scores, key=lambda row: row.rubric.id
+    ):
+        writer.writerow([score.rubric.criterion_name, score.marks, score.rubric.max_marks])
+    writer.writerow([])
+    writer.writerow(["Total marks", booking.evaluation.total_marks, booking.exam.max_marks])
+    writer.writerow(
+        [
+            "Percentage",
+            f"{booking.evaluation.total_marks / booking.exam.max_marks * 100:.2f}%",
+        ]
+    )
+    writer.writerow(["Remarks", booking.evaluation.remarks or ""])
+
+    response = Response(output.getvalue(), mimetype="text/csv")
+    response.headers["Content-Disposition"] = (
+        f"attachment; filename=scorecard_{booking.id}.csv"
+    )
+    return response
+
+
+def get_published_booking(booking_id):
+    booking = db.session.get(Booking, booking_id)
+    if (
+        booking is None
+        or booking.student_id != current_user.id
+        or not booking.exam.results_published
+        or booking.evaluation is None
+    ):
+        return None
+    return booking
 
 
 @student_bp.route("/bookings/<int:booking_id>/cancel", methods=["POST"])

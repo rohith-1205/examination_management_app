@@ -1,0 +1,78 @@
+{% extends "examiner/layout.html" %}
+
+{% block title %}Evaluations | Examination Management Portal{% endblock %}
+
+{% block examiner_content %}
+<div class="mb-4">
+    <span class="eyebrow">Examiner workspace</span>
+    <h1 class="h2 fw-bold mt-2 mb-1">Evaluations</h1>
+    <p class="text-secondary mb-0">Review completed exam sessions and enter student marks.</p>
+</div>
+
+<section class="admin-panel mb-4">
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="h5 fw-semibold mb-1">Pending evaluation</h2>
+            <p class="small text-secondary mb-0">Booked students whose slot date has arrived.</p>
+        </div>
+        <span class="soft-label">{{ pending|length }} pending</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead><tr><th>Student</th><th>Exam</th><th>Slot date</th><th class="text-end">Action</th></tr></thead>
+            <tbody>
+                {% for booking in pending %}
+                    <tr>
+                        <td><strong>{{ booking.student.name }}</strong><small class="d-block text-secondary">{{ booking.student.roll_no or booking.student.email }}</small></td>
+                        <td>{{ booking.exam.name }}<small class="d-block text-secondary">{{ booking.exam.course.code }}</small></td>
+                        <td>{{ booking.slot.date.strftime("%b %d, %Y") }} · {{ booking.slot.start_time.strftime("%H:%M") }}</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-primary rounded-pill" href="{{ url_for('examiner.evaluate', booking_id=booking.id) }}">
+                                <i class="bi bi-pencil-square me-1"></i>Evaluate
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-center text-secondary py-4">There are no sessions waiting for evaluation.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="admin-panel">
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="h5 fw-semibold mb-1">Evaluated students</h2>
+            <p class="small text-secondary mb-0">Edit marks until the exam results are published.</p>
+        </div>
+        <span class="soft-label">{{ evaluated|length }} evaluated</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table mb-0">
+            <thead><tr><th>Student</th><th>Exam</th><th>Marks</th><th>Evaluated</th><th class="text-end">Action</th></tr></thead>
+            <tbody>
+                {% for booking in evaluated %}
+                    <tr>
+                        <td><strong>{{ booking.student.name }}</strong><small class="d-block text-secondary">{{ booking.student.roll_no or booking.student.email }}</small></td>
+                        <td>{{ booking.exam.name }}<small class="d-block text-secondary">{{ booking.exam.course.code }}</small></td>
+                        <td><strong>{{ booking.evaluation.total_marks }}</strong> / {{ booking.exam.max_marks }}</td>
+                        <td>{{ booking.evaluation.evaluated_at.strftime("%b %d, %Y") }}</td>
+                        <td class="text-end">
+                            {% if not booking.exam.results_published %}
+                                <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('examiner.evaluate', booking_id=booking.id) }}">
+                                    <i class="bi bi-pencil me-1"></i>Edit
+                                </a>
+                            {% else %}
+                                <span class="badge rounded-pill course-active">Published</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-center text-secondary py-4">No evaluations have been entered yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

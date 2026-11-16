@@ -928,8 +928,150 @@ a.quick-action:hover {
     background-color: var(--color-purple) !important;
 }
 
+.bg-indigo {
+    background-color: var(--color-indigo) !important;
+}
+
 .bg-teal {
     background-color: var(--color-teal) !important;
+}
+
+.evaluation-summary-total,
+.result-total {
+    display: flex;
+    flex-direction: column;
+}
+
+.evaluation-summary-total strong {
+    color: var(--color-indigo);
+    font-size: 1.25rem;
+}
+
+.result-total {
+    color: var(--color-indigo);
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.result-total span {
+    color: var(--color-muted);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.result-progress {
+    height: 0.55rem;
+    border-radius: 999px;
+    background: #eeeff6;
+}
+
+.result-progress .progress-bar {
+    border-radius: 999px;
+}
+
+.result-remarks {
+    padding: 1rem;
+    border: 1px solid rgba(15, 159, 154, 0.15);
+    border-radius: 0.9rem;
+    background: #f0fdfa;
+}
+
+.scorecard {
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    border: 1px solid rgba(79, 70, 229, 0.1);
+    border-radius: 1.25rem;
+    background: #fff;
+    box-shadow: var(--shadow-soft);
+}
+
+.scorecard-header {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e9eaf2;
+}
+
+.scorecard-header > p {
+    color: var(--color-muted);
+}
+
+.scorecard-brand {
+    margin-bottom: 1rem;
+    color: var(--color-indigo);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.scorecard-details {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid #e9eaf2;
+}
+
+.scorecard-details > div,
+.scorecard-total > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.scorecard-details span,
+.scorecard-total span {
+    color: var(--color-muted);
+    font-size: 0.78rem;
+}
+
+.scorecard-details strong {
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+}
+
+.scorecard-progress {
+    min-width: 150px;
+}
+
+.scorecard-total {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-radius: 1rem;
+    background: linear-gradient(110deg, #f3f2ff, #f0fdfa);
+}
+
+.scorecard-total strong {
+    color: var(--color-indigo);
+    font-size: 1.2rem;
+}
+
+@media print {
+    body {
+        display: block;
+        background: #fff;
+    }
+
+    .portal-navbar,
+    .portal-footer,
+    .student-tabs,
+    .scorecard-actions,
+    .alert {
+        display: none !important;
+    }
+
+    .student-page,
+    .container {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .scorecard {
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+    }
 }
 
 .hero-section {
@@ -1078,6 +1220,10 @@ a.quick-action:hover {
     }
 
     .exam-timeline {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .scorecard-details {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 

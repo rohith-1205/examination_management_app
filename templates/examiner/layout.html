@@ -12,6 +12,10 @@
                href="{{ url_for('examiner.dashboard') }}#assigned-exams">
                 <i class="bi bi-file-earmark-text me-1"></i>My Exams
             </a>
+            <a class="examiner-tab {% if active_page == 'evaluations' %}active{% endif %}"
+               href="{{ url_for('examiner.evaluations') }}">
+                <i class="bi bi-clipboard-check me-1"></i>Evaluations
+            </a>
         </nav>
         {% block examiner_content %}{% endblock %}
     </div>

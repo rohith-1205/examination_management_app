@@ -509,6 +509,17 @@ def exam_detail(exam_id):
     ]
     rubric_weightage_total = sum(rubric.weightage for rubric in exam.rubrics)
     rubric_marks_total = sum(rubric.max_marks for rubric in exam.rubrics)
+    exam_bookings = [
+        booking for booking in exam.bookings if booking.status != "Cancelled"
+    ]
+    evaluations = [
+        booking.evaluation for booking in exam_bookings
+        if booking.evaluation is not None
+    ]
+    average_marks = (
+        sum(evaluation.total_marks for evaluation in evaluations) / len(evaluations)
+        if evaluations else 0
+    )
     if exam.status == "Draft":
         timeline_stage = 0
     elif exam.status == "Slot Creation":
@@ -528,6 +539,9 @@ def exam_detail(exam_id):
         rubric_marks_total=rubric_marks_total,
         weightage_progress=min(round(rubric_weightage_total, 1), 100),
         marks_progress=min(round(rubric_marks_total / exam.max_marks * 100), 100),
+        evaluated_count=len(evaluations),
+        total_bookings=len(exam_bookings),
+        average_marks=average_marks,
         today=date.today(),
         timeline_stage=timeline_stage,
         active_tab="exams",
